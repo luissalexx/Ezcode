@@ -5,6 +5,7 @@ const Profesor = require('../models/Profesor');
 const EmailExiste = async (correo = '') =>{
     const existeEmail = await Cliente.findOne({correo});
     if (existeEmail) {
+        console.log('El correo ya esta registrado')
         throw new Error('El correo ya esta registrado')
     }
 }
@@ -19,6 +20,7 @@ const UsuarioExiste = async (id = '') =>{
 const EmailProfeExiste = async (correo = '') =>{
     const existeEmail = await Profesor.findOne({correo});
     if (existeEmail) {
+        console.log('El correo ya esta registrado')
         throw new Error('El correo ya esta registrado')
     }
 }
@@ -37,10 +39,19 @@ const AdministradorExiste = async (id = '') =>{
     }
 }
 
+const EmailAdminExiste = async (correo = '') =>{
+    const existeEmail = await Administrador.findOne({correo});
+    if (existeEmail) {
+        console.log('El correo ya esta registrado')
+        throw new Error('El correo ya esta registrado')
+    }
+}
+
 module.exports = {
     EmailExiste,
     UsuarioExiste,
     EmailProfeExiste,
     ProfesorExiste,
-    AdministradorExiste
+    AdministradorExiste,
+    EmailAdminExiste
 }

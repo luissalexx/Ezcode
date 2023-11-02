@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { userPost, userGet, userUpdate, userDelete } = require('../controllers/usersc');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { check } = require('express-validator');
-const { EmailExiste, UsuarioExiste } = require('../helpers/db-validators');
+const { UsuarioExiste, EmailAdminExiste, EmailExiste, EmailProfeExiste } = require('../helpers/db-validators');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
 const router = Router();
@@ -10,7 +10,9 @@ const router = Router();
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('correo', 'El correo no es valido').isEmail(),
-    check('correo').custom(EmailExiste),
+    check('correo', 'El correo ya existe').custom(EmailExiste),
+    check('correo', 'El correo ya existe').custom(EmailAdminExiste),
+    check('correo', 'El correo ya existe').custom(EmailProfeExiste),
     validarCampos
 ], userPost);
 

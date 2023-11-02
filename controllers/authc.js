@@ -1,6 +1,8 @@
 const { response, request } = require('express');
 const { generarJWT } = require('../helpers/generar-jwt');
 const { GoogleVerify } = require('../helpers/google-verify');
+const { TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID } = process.env;
+const client = require('twilio')(TWILIO_ACCOUNT_SID, TWILIO_AUTH_TOKEN, TWILIO_SERVICE_SID, { lazyLoading: true });
 const Cliente = require('../models/Cliente');
 const Profesor = require('../models/Profesor');
 const Administrador = require('../models/Administrador');
@@ -22,7 +24,7 @@ const googleSignIn = async (req = request, res = response) => {
             if (usuario) {
                 tipo = 'Alumno'
             }
-            else{
+            else {
                 usuario = await Administrador.findOne({ correo });
                 if (usuario) {
                     tipo = 'Administrador'
@@ -54,9 +56,9 @@ const googleSignIn = async (req = request, res = response) => {
     }
 }
 
-const revalidarToken = async (req, res = response) => {
+const revalidarToken = async (req = request, res = response) => {
 
-    const {uid, name} = req;
+    const { uid, name } = req;
 
     const token = await generarJWT(uid, name);
 
@@ -66,8 +68,39 @@ const revalidarToken = async (req, res = response) => {
     })
 }
 
+const sendVerificationCode = async (req = request, res = response) => {
+    const { celular } = req.body;
+    try {
+        const otpResponse = await client.verify.v2
+            .services(TWILIO_SERVICE_SID)
+            .verifications.create({
+                to: `+52${celular}`,
+                channel: "sms"
+            });
+        res.status(200).send(`OTP enviado: ${JSON.stringify(otpResponse)}`);
+    } catch (error) {
+        res.status(error?.status || 400).send(error?.message || 'Algo salió mal');
+    }
+}
+
+const verifyCode = async (req = request, res = response) => {
+    const { celular, otp } = req.body;
+    try {
+        const verifiedResponse = await client.verify.v2
+            .services(TWILIO_SERVICE_SID)
+            .verificationChecks.create({
+                to: `+${celular}`,
+                code: otp,
+            });
+        res.status(200).send(`OTP verificado: ${JSON.stringify(verifiedResponse)}`);
+    } catch (error) {
+        res.status(error?.status || 400).send(error?.message || 'Algo salió mal');
+    }
+}
 
 module.exports = {
     googleSignIn,
-    revalidarToken
+    revalidarToken,
+    sendVerificationCode,
+    verifyCode
 }

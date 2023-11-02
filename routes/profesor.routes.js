@@ -1,7 +1,7 @@
 const {Router} = require('express');
 const { profePost, profeGet, profeUpdate, profeDelete } = require('../controllers/profesorc');
 const { validarCampos } = require('../middlewares/validar-campos');
-const { ProfesorExiste, EmailProfeExiste } = require('../helpers/db-validators');
+const { ProfesorExiste, EmailProfeExiste, EmailAdminExiste, EmailExiste } = require('../helpers/db-validators');
 const { check } = require('express-validator');
 const { validarJWT } = require('../middlewares/validar-jwt');
 
@@ -10,7 +10,9 @@ const router = Router();
 router.post('/', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('correo', 'El correo no es valido').isEmail(),
-    check('correo').custom(EmailProfeExiste),
+    check('correo', 'El correo ya existe').custom(EmailProfeExiste),
+    check('correo', 'El correo ya existe').custom(EmailExiste),
+    check('correo', 'El correo ya existe').custom(EmailAdminExiste),
     validarCampos
 ], profePost);
 
