@@ -6,7 +6,7 @@ const { AdministradorExiste } = require('../helpers/db-validators');
 
 const router = Router();
 
-router.get('/', adminGet);
+router.get('/:id', adminGet);
 
 router.put('/:id', [
     check('id', 'No es un id valido').isMongoId(),

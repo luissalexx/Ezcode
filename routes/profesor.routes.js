@@ -16,7 +16,7 @@ router.post('/', [
     validarCampos
 ], profePost);
 
-router.get('/profeGet', profeGet);
+router.get('/:id', profeGet);
 
 router.put('/:id', [
     check('id', 'No es un id valido').isMongoId(),

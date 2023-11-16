@@ -11,7 +11,10 @@ const AdministradorSchema = Schema({
     },
     imagen: {
         type: String,
-        required: [true, 'La imagen es obligatoria']
+    },
+    nacimiento: {
+        type: Date,
+        required: [true, 'La fecha de nacimiento es obligatoria']
     },
     sexo: {
         type: String,
@@ -20,7 +23,6 @@ const AdministradorSchema = Schema({
     celular: {
         type: String,
         required: [true, 'El celular es obligatorio'],
-        unique: true
     },
     correo: {
         type: String,

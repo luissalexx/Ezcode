@@ -27,13 +27,12 @@ const profePost = async (req = request, res = response) => {
     }
 }
 
-const profeGet = async (req = request, res = response) =>{
+const profeGet = async (req = request, res = response) => {
+    const { id } = req.params;
     try {
-        const profesor = await Profesor.find({
-            nombre: req.query.nombre
-        });
+        const profesor = await Profesor.findById(id);
         res.status(200).json({
-            msg:'Usuario encontrado',
+            msg: 'Usuario encontrado',
             profesor
         })
     } catch (error) {

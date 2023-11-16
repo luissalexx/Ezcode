@@ -1,15 +1,14 @@
 const { response, request } = require('express');
+const Administrador = require('../models/Administrador')
 const { MsgError } = require('../helpers/Myerror');
-const Administrador = require('../models/Administrador');
 
 const adminGet = async (req = request, res = response) =>{
+    const { id } = req.params;
     try {
-        const profesor = await Administrador.find({
-            nombre: req.query.nombre
-        });
+        const admin = await Administrador.findById(id);
         res.status(200).json({
-            msg:'Usuario encontrado',
-            profesor
+            msg: 'Usuario encontrado',
+            admin
         })
     } catch (error) {
         console.log(error);

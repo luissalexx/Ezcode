@@ -16,7 +16,7 @@ router.post('/', [
     validarCampos
 ], userPost);
 
-router.get('/', userGet);
+router.get('/:id', userGet);
 
 router.put('/:id', [
     check('id', 'No es un id valido').isMongoId(),

@@ -19,12 +19,10 @@ const ClienteSchema = new Schema({
     },
     imagen: {
         type: String,
-        required: false
     },
     celular: {
         type: String,
         required: [true, 'El celular es obligatorio'],
-        unique: true
     },
     correo: {
         type: String,

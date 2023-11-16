@@ -5,14 +5,15 @@ const { dbConnection } = require('../database/config')
 
 class Server {
 
-    constructor(){
+    constructor() {
         this.app = express();
         this.port = process.env.PORT;
 
         this.usuariosPath = '/api/user';
         this.profesoresPath = '/api/profesor';
-        this.administradorPath = '/api/administrador';
+        this.administradorPath = '/api/admin';
         this.authPath = '/api/auth';
+        this.uploadPath = '/api/uploads';
 
         //middlewares
         this.middlewares();
@@ -25,7 +26,7 @@ class Server {
 
     }
 
-    middlewares(){
+    middlewares() {
         //CORS
         this.app.use(cors());
 
@@ -36,20 +37,21 @@ class Server {
         this.app.use(express.static('public'));
     }
 
-    routes(){
+    routes() {
         this.app.use(this.usuariosPath, require('../routes/user.routes'));
         this.app.use(this.profesoresPath, require('../routes/profesor.routes'));
         this.app.use(this.administradorPath, require('../routes/administrador.routes'));
         this.app.use(this.authPath, require('../routes/auth.routes'));
+        this.app.use(this.uploadPath, require('../routes/upload.routes'));
     }
 
-    async connection(){
+    async connection() {
         await dbConnection();
     }
 
-    listen(){
-        this.app.listen( this.port, () => {
-            console.log('Servidor corriendo en puerto', this.port );
+    listen() {
+        this.app.listen(this.port, () => {
+            console.log('Servidor corriendo en puerto', this.port);
         });
     }
 }
