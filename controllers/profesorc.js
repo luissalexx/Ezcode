@@ -46,10 +46,11 @@ const profeUpdate = async (req = request, res = response) => {
     const { _id, correo, imagen, ...resto } = req.body;
 
     try {
-        const usuario = await Profesor.findByIdAndUpdate(id, resto);
-        res.status(200).json(usuario);
+        const profesor = await Profesor.findByIdAndUpdate(id, resto);
+        res.status(200).json(profesor);
     } catch (error) {
         res.status(500).json({ message: error.message });
+        console.log(error);
     }
 }
 
@@ -65,5 +66,5 @@ module.exports = {
     profePost,
     profeGet,
     profeUpdate,
-    profeDelete
+    profeDelete,
 }

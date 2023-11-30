@@ -32,9 +32,10 @@ const ProfeSchema = new Schema({
 
 });
 
-ProfeSchema.methods.toJSON = function(){
-    const { __v, ...profesor } = this.toObject();
+ProfeSchema.methods.toJSON = function () {
+    const {_id, __v, ...profesor } = this.toObject();
+    profesor.uid = _id;
     return profesor;
 }
 
-module.exports = model( 'Profesor', ProfeSchema );
+module.exports = model('Profesor', ProfeSchema);

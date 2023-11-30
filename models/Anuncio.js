@@ -3,7 +3,12 @@ const { Schema, model } = require('mongoose');
 const AnuncioSchema = new Schema({
     nombre: {
         type: String,
+        unique: true,
         required: [true, 'El nombre es obligatorio']
+    },
+    categoria: {
+        type: String,
+        required: [true, 'La categoria es obligatoria']
     },
     descripcion: {
         type: String,
@@ -11,17 +16,21 @@ const AnuncioSchema = new Schema({
     },
     imagen: {
         type: String,
-        required: false
     },
     precio: {
-        type: String,
-        required: [true, 'El precio es obligatorio'],
-        unique: true
+        type: Number,
+        default: 0,
     },
     estado: {
-        type: String,
-        required: false
+        type: Boolean,
+        required: true,
+        default: false
     },
+    profesor: {
+        type: Schema.Types.ObjectId,
+        ref: 'Profesor',
+        required: true
+    }
 });
 
 AnuncioSchema.methods.toJSON = function(){

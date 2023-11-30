@@ -14,6 +14,11 @@ class Server {
         this.administradorPath = '/api/admin';
         this.authPath = '/api/auth';
         this.uploadPath = '/api/uploads';
+        this.anuncioPath = '/api/anuncio';
+        this.cursoPath = '/api/curso';
+        this.solicitudAnuncioPath = '/api/solicitudA';
+        this.solicitudCursoPath = '/api/solicitudC';
+        this.busquedaPath = '/api/busqueda';
 
         //middlewares
         this.middlewares();
@@ -43,6 +48,11 @@ class Server {
         this.app.use(this.administradorPath, require('../routes/administrador.routes'));
         this.app.use(this.authPath, require('../routes/auth.routes'));
         this.app.use(this.uploadPath, require('../routes/upload.routes'));
+        this.app.use(this.anuncioPath, require('../routes/anuncio.routes'));
+        this.app.use(this.cursoPath, require('../routes/curso.routes'));
+        this.app.use(this.solicitudAnuncioPath, require('../routes/solicitudAnuncio.routes'));
+        this.app.use(this.solicitudCursoPath, require('../routes/solicitudCurso.routes'));
+        this.app.use(this.busquedaPath, require('../routes/busqueda.routes'));
     }
 
     async connection() {

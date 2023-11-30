@@ -16,4 +16,4 @@ router.get('/renew', validarJWT, revalidarToken);
 router.post('/send-code', sendVerificationCode);
 router.post('/verify-code', verifyCode);
 
-module.exports = router;
+module.exports = router; 

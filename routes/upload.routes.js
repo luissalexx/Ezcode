@@ -1,7 +1,7 @@
 const { Router } = require("express");
 const { validarCampos } = require("../middlewares/validar-campos");
 const { validarArchivoSubir } = require("../middlewares/validar-archivo");
-const { actualizarImagenCloudinary, mostrarImagen } = require("../controllers/upload");
+const { actualizarImagenCloudinary, mostrarImagen, cargarArchivo } = require("../controllers/upload");
 const { check } = require("express-validator");
 const { coleccionesPermitidas } = require("../helpers/db-validators");
 

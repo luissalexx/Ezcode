@@ -1,6 +1,10 @@
 const Administrador = require('../models/Administrador');
+const Anuncio = require('../models/Anuncio');
 const Cliente = require('../models/Cliente');
+const Curso = require('../models/Curso');
 const Profesor = require('../models/Profesor');
+const SolicitudAnuncio = require('../models/SolicitudAnuncio');
+const SolicitudCurso = require('../models/SolicitudCurso');
 
 const EmailExiste = async (correo = '') =>{
     const existeEmail = await Cliente.findOne({correo});
@@ -39,11 +43,39 @@ const AdministradorExiste = async (id = '') =>{
     }
 }
 
+const AnuncioExiste = async (id = '') =>{
+    const existeAnuncio = await Anuncio.findById(id);
+    if (!existeAnuncio) {
+        throw new Error('El id no existe')
+    }
+}
+
+const SolicitudAnuncioExiste = async (id = '') =>{
+    const existeSolicitud = await SolicitudAnuncio.findById(id);
+    if (!existeSolicitud) {
+        throw new Error('El id no existe')
+    }
+}
+
+const SolicitudCursoExiste = async (id = '') =>{
+    const existeSolicitud = await SolicitudCurso.findById(id);
+    if (!existeSolicitud) {
+        throw new Error('El id no existe')
+    }
+}
+
 const EmailAdminExiste = async (correo = '') =>{
     const existeEmail = await Administrador.findOne({correo});
     if (existeEmail) {
         console.log('El correo ya esta registrado')
         throw new Error('El correo ya esta registrado')
+    }
+}
+
+const CursoExiste = async (id = '') =>{
+    const existeCurso = await Curso.findById(id);
+    if (!existeCurso) {
+        throw new Error('El id no existe')
     }
 }
 
@@ -64,5 +96,9 @@ module.exports = {
     ProfesorExiste,
     AdministradorExiste,
     EmailAdminExiste,
-    coleccionesPermitidas
+    coleccionesPermitidas,
+    AnuncioExiste,
+    SolicitudAnuncioExiste,
+    CursoExiste,
+    SolicitudCursoExiste
 }

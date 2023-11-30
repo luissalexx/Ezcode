@@ -5,6 +5,10 @@ const CursoSchema = new Schema({
         type: String,
         required: [true, 'El nombre es obligatorio']
     },
+    categoria: {
+        type: String,
+        required: [true, 'La categoria es obligatoria']
+    },
     descripcion: {
         type: String,
         required: [true, 'La descripcion es obligatoria']
@@ -13,14 +17,25 @@ const CursoSchema = new Schema({
         type: String,
     },
     precio: {
-        type: String,
-        required: [true, 'El precio es obligatorio'],
-        unique: true
+        type: Number,
+        default: 0,
     },
-    estado: {
+    activo: {
         type: String,
-        required: false
+        required: true,
+        default: true
     },
+    alumno: {
+        type: Schema.Types.ObjectId,
+        ref: 'Cliente',
+        required: true
+    },
+    profesor: {
+        type: Schema.Types.ObjectId,
+        ref: 'Profesor',
+        required: true
+    }
+    
 });
 
 CursoSchema.methods.toJSON = function(){

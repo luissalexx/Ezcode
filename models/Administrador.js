@@ -32,7 +32,8 @@ const AdministradorSchema = Schema({
 });
 
 AdministradorSchema.methods.toJSON = function(){
-    const { __v, ...administrador } = this.toObject();
+    const {_id, __v, ...administrador } = this.toObject();
+    administrador.uid= _id;
     return administrador;
 }
 
