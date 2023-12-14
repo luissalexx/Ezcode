@@ -7,6 +7,7 @@ const { response } = require('express');
 const Cliente = require('../models/Cliente');
 const Profesor = require('../models/Profesor');
 const Administrador = require('../models/Administrador');
+const Anuncio = require('../models/Anuncio');
 
 const actualizarImagenCloudinary = async (req, res = response) => {
 
@@ -29,7 +30,7 @@ const actualizarImagenCloudinary = async (req, res = response) => {
             modelo = await Profesor.findById(id);
             if (!modelo) {
                 return res.status(400).json({
-                    msg: `No existe un producto con el id ${id}`
+                    msg: `No existe un usuario con el id ${id}`
                 });
             }
 
@@ -39,7 +40,17 @@ const actualizarImagenCloudinary = async (req, res = response) => {
             modelo = await Administrador.findById(id);
             if (!modelo) {
                 return res.status(400).json({
-                    msg: `No existe un producto con el id ${id}`
+                    msg: `No existe un usuario con el id ${id}`
+                });
+            }
+
+            break;
+
+        case 'anuncios':
+            modelo = await Anuncio.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe un anuncio con el id ${id}`
                 });
             }
 
@@ -59,7 +70,7 @@ const actualizarImagenCloudinary = async (req, res = response) => {
     const { tempFilePath } = req.files.archivo
     const { secure_url } = await cloudinary.uploader.upload(tempFilePath);
     modelo.imagen = secure_url;
-    
+
     await modelo.save();
     res.json(modelo);
 
@@ -96,6 +107,16 @@ const mostrarImagen = async (req, res = response) => {
             if (!modelo) {
                 return res.status(400).json({
                     msg: `No existe un usuario con el id ${id}`,
+                });
+            }
+
+            break;
+            
+        case 'anuncios':
+            modelo = await Anuncio.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe un anuncio con el id ${id}`
                 });
             }
 

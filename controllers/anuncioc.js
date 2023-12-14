@@ -4,13 +4,6 @@ const Anuncio = require('../models/Anuncio');
 const anuncioPost = async (req = request, res = response) => {
 
     const { nombre, descripcion, categoria, imagen, precio } = req.body;
-    const anuncioDB = await Anuncio.findOne({ nombre });
-
-    if (anuncioDB) {
-        return res.status(400).json({
-            msg: `El anuncio ${anuncioDB.nombre} ya existe`
-        });
-    }
 
     const data = {
         nombre,
@@ -37,27 +30,23 @@ const anuncioPost = async (req = request, res = response) => {
 }
 
 const anunciosGet = async (req = request, res = response) => {
-    const { limite = 5, desde = 0 } = req.query;
-    const query = {};
+    const query = {
+        estado: true
+    };
 
-    const [total, anuncios] = await Promise.all([
-        Anuncio.countDocuments(query),
-        Anuncio.find(query)
-            .populate('profesor', 'nombre apellido correo')
-            .skip(Number(desde))
-            .limit(Number(limite))
-    ]);
+    const anuncios = await Anuncio.find(query)
+        .sort({ createdAt: -1 })
+        .populate('profesor', 'nombre apellido correo')
 
     res.json({
-        total,
-        anuncios
+        results: anuncios
     })
 }
 
 const anuncioGetById = async (req = request, res = response) => {
     const { id } = req.params;
     try {
-        const anuncio = await Anuncio.findById(id)
+        const anuncio = await Anuncio.findById(id).populate('profesor', 'nombre correo');
         res.status(200).json({
             msg: 'Anuncio encontrado',
             anuncio
@@ -75,8 +64,8 @@ const anuncioUpdate = async (req = request, res = response) => {
 
     if (req.tipo === 'Profesor') {
         try {
-            const anuncio = await Anuncio.findByIdAndUpdate(id, data);
-            res.json(anuncio)
+            const anuncio = await Anuncio.findByIdAndUpdate(id, {estado: false}, data);
+            res.status(200).json(anuncio)
         } catch (error) {
             res.status(400).json(error);
         }
@@ -101,6 +90,26 @@ const anuncioUpdateStatus = async (req = request, res = response) => {
     }
 }
 
+const anunciosDelete = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (req.tipo === 'Profesor') {
+            const resultado = await Anuncio.deleteMany({ profesor: id });
+
+            if (resultado.deletedCount > 0) {
+                return res.json({ mensaje: `Se eliminaron los anuncios del profesor: ${id}` });
+            } else {
+                return res.json({ mensaje: `No se encontraron anuncios del profesor: ${id}` });
+            }
+        } else {
+            return res.status(403).json({ mensaje: 'Acceso no autorizado.' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
+
 const anuncioDelete = async (req = request, res = response) => {
     if (req.tipo === 'Profesor') {
         try {
@@ -123,5 +132,6 @@ module.exports = {
     anuncioGetById,
     anuncioUpdate,
     anuncioUpdateStatus,
-    anuncioDelete
+    anuncioDelete,
+    anunciosDelete
 }

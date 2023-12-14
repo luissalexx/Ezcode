@@ -10,13 +10,13 @@ const router = Router();
 router.put('/:coleccion/:id', [
     validarArchivoSubir,
     check('id','El id debe de ser de mongo').isMongoId(),
-    check('coleccion').custom( c => coleccionesPermitidas( c, ['administradors','profesors', 'clientes'] ) ),
+    check('coleccion').custom( c => coleccionesPermitidas( c, ['administradors','profesors', 'clientes', 'anuncios'] ) ),
     validarCampos
 ], actualizarImagenCloudinary )
 
 router.get('/:coleccion/:id', [
     check('id','El id debe de ser de mongo').isMongoId(),
-    check('coleccion').custom( c => coleccionesPermitidas( c, ['administradors','profesors', 'clientes'] ) ),
+    check('coleccion').custom( c => coleccionesPermitidas( c, ['administradors','profesors', 'clientes', 'anuncios'] ) ),
     validarCampos
 ], mostrarImagen  )
 

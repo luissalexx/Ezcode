@@ -3,7 +3,6 @@ const { Schema, model } = require('mongoose');
 const AnuncioSchema = new Schema({
     nombre: {
         type: String,
-        unique: true,
         required: [true, 'El nombre es obligatorio']
     },
     categoria: {
@@ -19,7 +18,7 @@ const AnuncioSchema = new Schema({
     },
     precio: {
         type: Number,
-        default: 0,
+        default: 1,
     },
     estado: {
         type: Boolean,
@@ -30,6 +29,10 @@ const AnuncioSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Profesor',
         required: true
+    },
+    createdAt: {
+        type: Date,
+        default: Date.now
     }
 });
 

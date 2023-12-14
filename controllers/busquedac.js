@@ -1,35 +1,37 @@
-const { response } = require('express');
+const { response, request } = require('express');
 const escapeRegexp = require("escape-string-regexp-node");
 const Anuncio = require('../models/Anuncio');
 const Cliente = require('../models/Cliente');
 const Curso = require('../models/Curso');
-const { ObjectId } = require('mongoose').Types;
+const Profesor = require('../models/Profesor');
 
 const coleccionesPermitidas = ['anuncios', 'cursos'];
 
 const buscarAnuncio = async (termino = '', res = response) => {
     try {
-        const esMongoID = ObjectId.isValid(termino);
-
-        if (esMongoID) {
-            const anuncio = await Anuncio.findById(termino).populate('profesor', 'nombre correo');
-            return res.json({
-                results: anuncio ? [anuncio] : []
-            });
-        }
+        const profesor = await Profesor.findOne({ correo: termino });
 
         const escapedTermino = escapeRegexp(termino);
         const regex = new RegExp(escapedTermino, 'i');
 
-        const anuncios = await Anuncio.find({
+        let query = {
             $or: [
                 { nombre: regex },
-                { categoria: regex },
+                { categoria: termino },
             ],
-            $and: [{ estado: false }]
-        }).populate('profesor', 'nombre correo');
+        };
 
-        console.log(anuncios)
+        if (profesor) {
+            query.$or.push({ profesor: profesor._id });
+        }
+
+        if (!profesor) {
+            query.$and = [{ estado: true }];
+        }
+
+        const anuncios = await Anuncio.find(query)
+            .sort({ createdAt: -1 })
+            .populate('profesor', 'nombre correo');
 
         res.json({
             results: anuncios

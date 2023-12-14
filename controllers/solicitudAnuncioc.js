@@ -22,22 +22,17 @@ const solicitudPost = async (req, res) => {
 };
 
 const solicitudesGet = async (req = request, res = response) => {
-    const { limite = 5, desde = 0 } = req.query;
     const query = { estado: false };
 
     if (req.tipo === 'Administrador') {
 
-        const [total, solicitudes] = await Promise.all([
-            SolicitudAnuncio.countDocuments(query),
+        const [solicitudes] = await Promise.all([
             SolicitudAnuncio.find(query)
                 .populate('profesor', 'nombre apellido correo')
-                .populate('anuncio', 'nombre')
-                .skip(Number(desde))
-                .limit(Number(limite))
+                .populate('anuncio', 'nombre categoria precio')
         ]);
 
         res.json({
-            total,
             solicitudes
         })
     } else {
@@ -45,6 +40,7 @@ const solicitudesGet = async (req = request, res = response) => {
     }
 
 }
+
 
 const solicitudUpdate = async (req = request, res = response) => {
     const { id } = req.params;
@@ -62,8 +58,39 @@ const solicitudUpdate = async (req = request, res = response) => {
     }
 }
 
+const solicitudGetByAnuncio = async (req = request, res = response) => {
+    try {
+        const anuncioId = req.params.anuncioId;
+        let solicitud = await SolicitudAnuncio.findOne({ anuncio: anuncioId });
+        return res.json(solicitud);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const solicitudesDelete = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (req.tipo === 'Profesor') {
+            const resultado = await SolicitudAnuncio.deleteMany({ profesor: id });
+
+            if (resultado.deletedCount > 0) {
+                return res.json({ mensaje: `Se eliminaron los solicitudes del profesor: ${id}` });
+            } else {
+                return res.json({ mensaje: `No se encontraron solicitudes del profesor: ${id}` });
+            }
+        } else {
+            return res.status(403).json({ mensaje: 'Acceso no autorizado.' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
+
 const solicitudDelete = async (req = request, res = response) => {
-    if (req.tipo === 'Administrador') {
+    if (req.tipo !== 'Cliente') {
         try {
             const { id } = req.params;
             const solicitud = await SolicitudAnuncio.findByIdAndDelete(id);
@@ -74,7 +101,7 @@ const solicitudDelete = async (req = request, res = response) => {
             console.log(error);
         }
     } else {
-        res.status(403).json({ error: 'Solo los administradores pueden quitar solicitudes.' });
+        res.status(403).json({ error: 'Solo los administradores y profesores pueden quitar solicitudes.' });
     }
 }
 
@@ -82,5 +109,7 @@ module.exports = {
     solicitudPost,
     solicitudesGet,
     solicitudUpdate,
-    solicitudDelete
+    solicitudDelete,
+    solicitudGetByAnuncio,
+    solicitudesDelete
 }

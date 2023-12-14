@@ -2,8 +2,8 @@ const { Router } = require('express');
 const { validarJWT } = require('../middlewares/validar-jwt');
 const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
-const { anuncioPost, anuncioGetById, anuncioUpdate, anuncioDelete, anuncioUpdateStatus, anunciosGet } = require('../controllers/anuncioc');
-const { AnuncioExiste } = require('../helpers/db-validators');
+const { anuncioPost, anuncioGetById, anuncioUpdate, anuncioDelete, anuncioUpdateStatus, anunciosGet, anunciosDelete } = require('../controllers/anuncioc');
+const { AnuncioExiste, ProfesorExiste } = require('../helpers/db-validators');
 
 const router = Router();
 
@@ -44,6 +44,13 @@ router.delete('/:id', [
     check('id').custom(AnuncioExiste),
     validarCampos
 ], anuncioDelete);
+
+router.delete('/all/:id', [
+    validarJWT,
+    check('id', 'No es un id de Mongo válido').isMongoId(),
+    check('id').custom(ProfesorExiste),
+    validarCampos
+], anunciosDelete);
 
 
 module.exports = router;
