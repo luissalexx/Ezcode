@@ -15,7 +15,7 @@ router.post('/', [
     validarCampos
 ], anuncioPost);
 
-router.get('/', anunciosGet );
+router.get('/published/', anunciosGet );
 
 //Obtener anuncio por id
 router.get('/:id', [
