@@ -2,7 +2,7 @@ const { response, request } = require('express');
 const Administrador = require('../models/Administrador')
 const { MsgError } = require('../helpers/Myerror');
 
-const adminGet = async (req = request, res = response) =>{
+const adminGet = async (req = request, res = response) => {
     const { id } = req.params;
     try {
         const admin = await Administrador.findById(id);
@@ -28,7 +28,37 @@ const adminUpdate = async (req = request, res = response) => {
     }
 }
 
+const notificacionesGet = async (req = request, res = response) => {
+    const { id } = req.params;
+
+    try {
+        const admin = await Administrador.findById(id)
+
+        const notificaciones = admin.notificaciones;
+        res.status(200).json({ notificaciones });
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const notificacionesDelete = async (req = request, res = response) => {
+    const { id } = req.params;
+
+    try {
+        const admin = await Administrador.findById(id)
+
+        admin.notificaciones = [];
+        await admin.save();
+
+        return res.status(200).json({ mensaje: 'Notificaciones limpiadas correctamente' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
 module.exports = {
     adminGet,
-    adminUpdate
+    adminUpdate,
+    notificacionesGet,
+    notificacionesDelete
 }

@@ -1,4 +1,16 @@
-const { Schema, model} = require('mongoose');
+const { Schema, model } = require('mongoose');
+
+const NotificacionSchema = new Schema({
+    mensaje: {
+        type: String,
+        required: [true, 'El mensaje es obligatorio']
+    },
+    fecha: {
+        type: Date,
+        default: Date.now,
+    }
+});
+
 
 const AdministradorSchema = Schema({
     nombre: {
@@ -29,12 +41,13 @@ const AdministradorSchema = Schema({
         required: [true, 'El correo es obligatorio'],
         unique: true
     },
+    notificaciones: [NotificacionSchema]
 });
 
-AdministradorSchema.methods.toJSON = function(){
-    const {_id, __v, ...administrador } = this.toObject();
-    administrador.uid= _id;
+AdministradorSchema.methods.toJSON = function () {
+    const { _id, __v, ...administrador } = this.toObject();
+    administrador.uid = _id;
     return administrador;
 }
 
-module.exports = model( 'Administrador', AdministradorSchema );
+module.exports = model('Administrador', AdministradorSchema);

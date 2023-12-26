@@ -9,16 +9,16 @@ const router = Router();
 
 router.put('/:coleccion/:id', [
     validarArchivoSubir,
-    check('id','El id debe de ser de mongo').isMongoId(),
-    check('coleccion').custom( c => coleccionesPermitidas( c, ['administradors','profesors', 'clientes', 'anuncios'] ) ),
+    check('id', 'El id debe de ser de mongo').isMongoId(),
+    check('coleccion').custom(c => coleccionesPermitidas(c, ['administradors', 'profesors', 'clientes', 'anuncios', 'cursos'])),
     validarCampos
-], actualizarImagenCloudinary )
+], actualizarImagenCloudinary)
 
 router.get('/:coleccion/:id', [
-    check('id','El id debe de ser de mongo').isMongoId(),
-    check('coleccion').custom( c => coleccionesPermitidas( c, ['administradors','profesors', 'clientes', 'anuncios'] ) ),
+    check('id', 'El id debe de ser de mongo').isMongoId(),
+    check('coleccion').custom(c => coleccionesPermitidas(c, ['administradors', 'profesors', 'clientes', 'anuncios', 'cursos'])),
     validarCampos
-], mostrarImagen  )
+], mostrarImagen)
 
 
 module.exports = router;

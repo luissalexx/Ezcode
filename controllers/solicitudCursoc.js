@@ -1,16 +1,28 @@
 const { response, request } = require('express');
 const SolicitudCurso = require('../models/SolicitudCurso');
+const Anuncio = require('../models/Anuncio');
+const Profesor = require('../models/Profesor');
+const Cliente = require('../models/Cliente');
 
 const solicitudPost = async (req, res) => {
     const data = {
         alumno: req.usuario._id,
-        curso: req.body.curso
+        anuncio: req.body.anuncio,
+        profesor: req.body.profesor
     };
 
     if (req.tipo === 'Cliente') {
         try {
             const solicitud = new SolicitudCurso(data);
             await solicitud.save();
+
+            const anuncio = await Anuncio.findById(solicitud.anuncio);
+            const profesor = await Profesor.findById(anuncio.profesor);
+
+            profesor.notificaciones.push({
+                mensaje: `Ha llegado una nueva solicitud del curso: ${anuncio.nombre}`
+            });
+            await profesor.save();
 
             res.status(201).json(solicitud);
         } catch (error) {
@@ -22,37 +34,59 @@ const solicitudPost = async (req, res) => {
 };
 
 const solicitudesGet = async (req = request, res = response) => {
-    const { limite = 5, desde = 0 } = req.query;
-    const query = { estado: false };
+    const query = { estado: false, pagado: false };
 
-    if (req.tipo === 'Profesor') {
+    if (req.tipo !== 'Administrador') {
 
-        const [total, solicitudes] = await Promise.all([
-            SolicitudCurso.countDocuments(query),
-            SolicitudCurso.find(query)
-                .populate('alumno', 'nombre apellido correo')
-                .populate('curso', 'nombre')
-                .skip(Number(desde))
-                .limit(Number(limite))
-        ]);
+        const solicitudes = await SolicitudCurso.find(query)
+            .populate('alumno', 'nombre apellido correo')
+            .populate('profesor', 'nombre apellido correo')
+            .populate('anuncio', 'nombre categoria precio')
 
         res.json({
-            total,
             solicitudes
         })
     } else {
-        res.status(403).json({ error: 'Solo los profesores pueden ver las solicitudes de cursos.' });
+        res.status(403).json({ error: 'No tienes los permisos para ver las solicitudes' });
+    }
+}
+
+const solicitudesAceptadasGet = async (req = request, res = response) => {
+    const query = { estado: true, pagado: false };
+
+    if (req.tipo !== 'Administrador') {
+
+        const solicitudes = await SolicitudCurso.find(query)
+            .populate('alumno', 'nombre apellido correo')
+            .populate('profesor', 'nombre apellido correo')
+            .populate('anuncio', 'nombre categoria precio')
+
+        res.json({
+            solicitudes
+        })
+    } else {
+        res.status(403).json({ error: 'No tienes los permisos para ver las solicitudes' });
     }
 
 }
 
 const solicitudUpdate = async (req = request, res = response) => {
     const { id } = req.params;
-    const { estado } = req.body;
 
     if (req.tipo === 'Profesor') {
         try {
             const solicitud = await SolicitudCurso.findByIdAndUpdate(id, { estado: true }, { new: true });
+
+            const idProfesor = solicitud.profesor._id;
+            await Profesor.findByIdAndUpdate(idProfesor, { $inc: { limiteCursos: 1 } }, { new: true });
+
+            const alumno = await Cliente.findById(solicitud.alumno);
+            const anuncio = await Anuncio.findById(solicitud.anuncio)
+            alumno.notificaciones.push({
+                mensaje: `Han aprobado tu solicitud del curso: ${anuncio.nombre}`
+            });
+            await alumno.save();
+
             res.json(solicitud);
         } catch (error) {
             res.status(400).json(error);
@@ -61,6 +95,37 @@ const solicitudUpdate = async (req = request, res = response) => {
         res.status(403).json({ error: 'Solo los profesores pueden aprobar las solicitudes.' });
     }
 }
+
+const solicitudGetByAnuncio = async (req = request, res = response) => {
+    try {
+        const anuncioId = req.params.anuncioId;
+        let solicitud = await SolicitudCurso.findOne({ anuncio: anuncioId });
+        return res.json(solicitud);
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const solicitudesDelete = async (req, res) => {
+    try {
+        const { id } = req.params;
+        if (req.tipo === 'Cliente') {
+            const resultado = await SolicitudCurso.deleteMany({ profesor: id });
+
+            if (resultado.deletedCount > 0) {
+                return res.json({ mensaje: `Se eliminaron los solicitudes del cliente: ${id}` });
+            } else {
+                return res.json({ mensaje: `No se encontraron solicitudes del cliente: ${id}` });
+            }
+        } else {
+            return res.status(403).json({ mensaje: 'Acceso no autorizado.' });
+        }
+    } catch (error) {
+        console.error(error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
 
 const solicitudDelete = async (req = request, res = response) => {
     if (req.tipo === 'Profesor') {
@@ -81,6 +146,9 @@ const solicitudDelete = async (req = request, res = response) => {
 module.exports = {
     solicitudPost,
     solicitudesGet,
+    solicitudesAceptadasGet,
+    solicitudGetByAnuncio,
     solicitudUpdate,
-    solicitudDelete
+    solicitudDelete,
+    solicitudesDelete,
 }

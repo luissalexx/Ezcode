@@ -69,9 +69,39 @@ const userDelete = async (req = request, res = response) => {
     res.json(usuario);
 }
 
+const notificacionesGet = async (req = request, res = response) => {
+    const { id } = req.params;
+
+    try {
+        const cliente = await Cliente.findById(id);
+
+        const notificaciones = cliente.notificaciones;
+        res.status(200).json({ notificaciones });
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const notificacionesDelete = async (req = request, res = response) => {
+    const { id } = req.params;
+
+    try {
+        const cliente = await Cliente.findById(id)
+
+        cliente.notificaciones = [];
+        await cliente.save();
+
+        return res.status(200).json({ mensaje: 'Notificaciones limpiadas correctamente' });
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
 module.exports = {
     userPost,
     userGet,
     userUpdate,
-    userDelete
+    userDelete,
+    notificacionesGet,
+    notificacionesDelete
 }

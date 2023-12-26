@@ -8,6 +8,7 @@ const Cliente = require('../models/Cliente');
 const Profesor = require('../models/Profesor');
 const Administrador = require('../models/Administrador');
 const Anuncio = require('../models/Anuncio');
+const Curso = require('../models/Curso');
 
 const actualizarImagenCloudinary = async (req, res = response) => {
 
@@ -51,6 +52,16 @@ const actualizarImagenCloudinary = async (req, res = response) => {
             if (!modelo) {
                 return res.status(400).json({
                     msg: `No existe un anuncio con el id ${id}`
+                });
+            }
+
+            break;
+
+        case 'cursos':
+            modelo = await Curso.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe un curso con el id ${id}`
                 });
             }
 
@@ -111,12 +122,22 @@ const mostrarImagen = async (req, res = response) => {
             }
 
             break;
-            
+
         case 'anuncios':
             modelo = await Anuncio.findById(id);
             if (!modelo) {
                 return res.status(400).json({
                     msg: `No existe un anuncio con el id ${id}`
+                });
+            }
+
+            break;
+
+        case 'cursos':
+            modelo = await Curso.findById(id);
+            if (!modelo) {
+                return res.status(400).json({
+                    msg: `No existe un curso con el id ${id}`
                 });
             }
 

@@ -1,5 +1,16 @@
 const { Schema, model } = require('mongoose');
 
+const TemaSchema = new Schema({
+    nombre: {
+        type: String,
+        required: [true, 'El nombre del tema es obligatorio']
+    },
+    contenido: {
+        type: String,
+        required: [true, 'El contenido del tema es obligatorio']
+    }
+});
+
 const CursoSchema = new Schema({
     nombre: {
         type: String,
@@ -16,14 +27,10 @@ const CursoSchema = new Schema({
     imagen: {
         type: String,
     },
-    precio: {
-        type: Number,
-        default: 0,
-    },
-    activo: {
-        type: String,
+    acreditado: {
+        type: Boolean,
         required: true,
-        default: true
+        default: false
     },
     alumno: {
         type: Schema.Types.ObjectId,
@@ -34,14 +41,15 @@ const CursoSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: 'Profesor',
         required: true
-    }
-    
+    },
+    temas: [TemaSchema]
+
 });
 
-CursoSchema.methods.toJSON = function(){
-    const { __v, _id, ...curso} = this.toObject();
-    curso.uid= _id;
+CursoSchema.methods.toJSON = function () {
+    const { __v, _id, ...curso } = this.toObject();
+    curso.uid = _id;
     return curso;
 }
 
-module.exports = model( 'Curso', CursoSchema );
+module.exports = model('Curso', CursoSchema);

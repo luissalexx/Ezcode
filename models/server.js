@@ -3,7 +3,6 @@ const cors = require('cors');
 const { dbConnection } = require('../database/config')
 const fileUpload = require('express-fileupload');
 
-
 class Server {
 
     constructor() {
@@ -20,6 +19,7 @@ class Server {
         this.solicitudAnuncioPath = '/api/solicitudA';
         this.solicitudCursoPath = '/api/solicitudC';
         this.busquedaPath = '/api/busqueda';
+        this.paymentPath = '/api/pago';
 
         //middlewares
         this.middlewares();
@@ -60,6 +60,7 @@ class Server {
         this.app.use(this.solicitudAnuncioPath, require('../routes/solicitudAnuncio.routes'));
         this.app.use(this.solicitudCursoPath, require('../routes/solicitudCurso.routes'));
         this.app.use(this.busquedaPath, require('../routes/busqueda.routes'));
+        this.app.use(this.paymentPath, require('../routes/payment.routes'));
     }
 
     async connection() {

@@ -46,18 +46,35 @@ const buscarAnuncio = async (termino = '', res = response) => {
 
 const buscarCursoPorCorreo = async (termino = '', res = response) => {
     try {
+        let usuario;
 
-        const alumno = await Cliente.findOne({ correo: termino });
-        if (!alumno) {
-            return [];
+        const cliente = await Cliente.findOne({ correo: termino });
+        if (cliente) {
+            usuario = cliente;
+        } else {
+            const profesor = await Profesor.findOne({ correo: termino });
+            if (profesor) {
+                usuario = profesor;
+            } else {
+                return res.json({
+                    results: []
+                });
+            }
         }
 
         const cursos = await Curso.find({
             $and: [
-                { activo: true },
-                { alumno: alumno._id }
+                { acreditado: false },
+                {
+                    $or: [
+                        { alumno: usuario._id },
+                        { profesor: usuario._id }
+                    ]
+                }
             ]
         })
+            .populate('profesor', 'nombre apellido correo')
+            .populate('alumno', 'nombre apellido correo');
 
         res.json({
             results: cursos

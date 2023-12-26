@@ -1,5 +1,5 @@
-const {Router} = require('express');
-const { profePost, profeGet, profeUpdate, profeDelete } = require('../controllers/profesorc');
+const { Router } = require('express');
+const { profePost, profeGet, profeUpdate, profeDelete, notificacionesGet, notificacionesDelete } = require('../controllers/profesorc');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { ProfesorExiste, EmailProfeExiste, EmailAdminExiste, EmailExiste } = require('../helpers/db-validators');
 const { check } = require('express-validator');
@@ -17,6 +17,10 @@ router.post('/', [
 ], profePost);
 
 router.get('/:id', profeGet);
+
+router.get('/notificaciones/:id', notificacionesGet);
+
+router.post('/notificaciones/:id', notificacionesDelete);
 
 router.put('/:id', [
     check('id', 'No es un id valido').isMongoId(),

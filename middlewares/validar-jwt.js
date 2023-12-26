@@ -22,7 +22,7 @@ const validarJWT = async (req = request, res = response, next) => {
         let usuario = await Cliente.findById(uid);
 
         if (usuario) {
-            tipo = 'Alumno'
+            tipo = 'Cliente'
         } else {
             usuario = await Profesor.findById(uid);
             if (usuario) {

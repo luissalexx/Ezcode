@@ -1,5 +1,17 @@
 const { Schema, model } = require('mongoose');
 
+const NotificacionSchema = new Schema({
+    mensaje: {
+        type: String,
+        required: [true, 'El mensaje es obligatorio']
+    },
+
+    fecha: {
+        type: Date,
+        default: Date.now
+    }
+});
+
 const ClienteSchema = new Schema({
     nombre: {
         type: String,
@@ -29,12 +41,17 @@ const ClienteSchema = new Schema({
         required: [true, 'El correo es obligatorio'],
         unique: true
     },
+    acreditados: {
+        type: Number,
+        default: 0
+    },
+    notificaciones: [NotificacionSchema]
 });
 
-ClienteSchema.methods.toJSON = function(){
+ClienteSchema.methods.toJSON = function () {
     const { __v, _id, ...cliente } = this.toObject();
-    cliente.uid= _id;
+    cliente.uid = _id;
     return cliente;
 }
 
-module.exports = model( 'Cliente', ClienteSchema );
+module.exports = model('Cliente', ClienteSchema);

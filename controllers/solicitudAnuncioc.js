@@ -1,5 +1,9 @@
 const { response, request } = require('express');
 const SolicitudAnuncio = require('../models/SolicitudAnuncio');
+const Profesor = require('../models/Profesor');
+const Administrador = require('../models/Administrador');
+const Anuncio = require('../models/Anuncio');
+const AdminID = process.env.ADMINID;
 
 const solicitudPost = async (req, res) => {
     const data = {
@@ -11,6 +15,12 @@ const solicitudPost = async (req, res) => {
         try {
             const solicitud = new SolicitudAnuncio(data);
             await solicitud.save();
+
+            const admin = await Administrador.findById(AdminID);
+            admin.notificaciones.push({
+                mensaje: `Ha llegado una nueva solicitud de anuncio`
+            });
+            await admin.save();
 
             res.status(201).json(solicitud);
         } catch (error) {
@@ -26,11 +36,9 @@ const solicitudesGet = async (req = request, res = response) => {
 
     if (req.tipo === 'Administrador') {
 
-        const [solicitudes] = await Promise.all([
-            SolicitudAnuncio.find(query)
-                .populate('profesor', 'nombre apellido correo')
-                .populate('anuncio', 'nombre categoria precio')
-        ]);
+        const solicitudes = await SolicitudAnuncio.find(query)
+            .populate('profesor', 'nombre apellido correo')
+            .populate('anuncio', 'nombre categoria precio')
 
         res.json({
             solicitudes
@@ -41,14 +49,20 @@ const solicitudesGet = async (req = request, res = response) => {
 
 }
 
-
 const solicitudUpdate = async (req = request, res = response) => {
     const { id } = req.params;
-    const { estado } = req.body;
 
     if (req.tipo === 'Administrador') {
         try {
             const solicitud = await SolicitudAnuncio.findByIdAndUpdate(id, { estado: true }, { new: true });
+
+            const profesor = await Profesor.findById(solicitud.profesor);
+            const anuncio = await Anuncio.findById(solicitud.anuncio)
+            profesor.notificaciones.push({
+                mensaje: `Han aprobado la solicitud de tu anuncio: ${anuncio.nombre}`
+            });
+            await profesor.save();
+
             res.json(solicitud);
         } catch (error) {
             res.status(400).json(error);
@@ -93,6 +107,7 @@ const solicitudDelete = async (req = request, res = response) => {
     if (req.tipo !== 'Cliente') {
         try {
             const { id } = req.params;
+
             const solicitud = await SolicitudAnuncio.findByIdAndDelete(id);
 
             res.json(solicitud);

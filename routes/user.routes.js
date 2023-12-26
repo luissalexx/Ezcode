@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { userPost, userGet, userUpdate, userDelete } = require('../controllers/usersc');
+const { userPost, userGet, userUpdate, userDelete, notificacionesGet, notificacionesDelete } = require('../controllers/usersc');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { check } = require('express-validator');
 const { UsuarioExiste, EmailAdminExiste, EmailExiste, EmailProfeExiste } = require('../helpers/db-validators');
@@ -17,6 +17,10 @@ router.post('/', [
 ], userPost);
 
 router.get('/:id', userGet);
+
+router.get('/notificaciones/:id', notificacionesGet);
+
+router.post('/notificaciones/:id', notificacionesDelete);
 
 router.put('/:id', [
     check('id', 'No es un id valido').isMongoId(),

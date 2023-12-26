@@ -6,9 +6,19 @@ const SolicitudCursoSchema = new Schema({
         required: true,
         default: false
     },
-    curso: {
+    pagado: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    anuncio: {
         type: Schema.Types.ObjectId,
-        ref: 'Curso',
+        ref: 'Anuncio',
+        required: true
+    },
+    profesor: {
+        type: Schema.Types.ObjectId,
+        ref: 'Profesor',
         required: true
     },
     alumno: {

@@ -64,7 +64,7 @@ const anuncioUpdate = async (req = request, res = response) => {
 
     if (req.tipo === 'Profesor') {
         try {
-            const anuncio = await Anuncio.findByIdAndUpdate(id, {estado: false}, data);
+            const anuncio = await Anuncio.findByIdAndUpdate(id, data, {new: true});
             res.status(200).json(anuncio)
         } catch (error) {
             res.status(400).json(error);
