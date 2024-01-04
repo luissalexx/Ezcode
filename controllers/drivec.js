@@ -5,14 +5,12 @@ const { Readable } = require('stream');
 const fs = require('fs').promises;
 const { GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY } = process.env;
 
-const cleanedPrivateKey = GOOGLE_PRIVATE_KEY.replace(/\n/g, '');
-
 const drive = google.drive({
     version: 'v3',
     auth: new google.auth.JWT(
         GOOGLE_CLIENT_EMAIL,
         null,
-        cleanedPrivateKey,
+        GOOGLE_PRIVATE_KEY,
         ['https://www.googleapis.com/auth/drive']
     ),
 });
