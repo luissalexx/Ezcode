@@ -83,13 +83,14 @@ const cursoDelete = async (req = request, res = response) => {
         try {
             const { id } = req.params;
             const curso = await Curso.findById(id)
-            
+
             if (curso.acreditado == false) {
                 const idProfesor = curso.profesor._id;
                 await Profesor.findByIdAndUpdate(idProfesor, { $inc: { limiteCursos: -1 } }, { new: true });
             }
 
-            await Curso.findByIdAndDelete(id);
+            const borrarCurso = await Curso.findByIdAndDelete(id);
+            res.json(borrarCurso);
 
         } catch (error) {
             res.status(400).json(error);
@@ -101,11 +102,11 @@ const cursoDelete = async (req = request, res = response) => {
 }
 
 const temaPost = async (req = request, res = response) => {
-    const { cursoId } = req.params;
-    const { nombre, contenido } = req.body;
+    const { id } = req.params;
+    const { nombre, contenido, url, precio } = req.body;
 
     try {
-        const curso = await Curso.findById(cursoId);
+        const curso = await Curso.findById(id);
 
         if (!curso) {
             return res.status(404).json({ error: 'Curso no encontrado' });
@@ -114,7 +115,13 @@ const temaPost = async (req = request, res = response) => {
         const nuevoTema = {
             nombre,
             contenido,
+            url,
+            precio
         };
+
+        if (precio === 0) {
+            nuevoTema.pagado = true;
+        }
 
         curso.temas.push(nuevoTema);
         await curso.save();
@@ -125,11 +132,11 @@ const temaPost = async (req = request, res = response) => {
     }
 };
 
-const temasGet = async (req = request, res = response) => {
-    const { cursoId } = req.params;
+const temasGet = async (req, res) => {
+    const { id } = req.params;
 
     try {
-        const curso = await Curso.findById(cursoId);
+        const curso = await Curso.findOne({ _id: id }, { temas: 1 });
 
         if (!curso) {
             return res.status(404).json({ error: 'Curso no encontrado' });
@@ -142,26 +149,55 @@ const temasGet = async (req = request, res = response) => {
     }
 };
 
+const temaGetById = async (req, res) => {
+    const { id, idTema } = req.params;
+
+    try {
+        const curso = await Curso.findOne({ _id: id }, { temas: 1 });
+
+        if (!curso) {
+            return res.status(404).json({ error: 'Curso no encontrado' });
+        }
+
+        const temaEncontrado = curso.temas.find(tema => tema._id == idTema);
+
+        if (!temaEncontrado) {
+            return res.status(404).json({ error: 'Tema no encontrado en el curso' });
+        }
+
+        res.status(200).json({ temaEncontrado });
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
 const temaPut = async (req = request, res = response) => {
-    const { cursoId, temaId } = req.params;
-    const { nombre, contenido } = req.body;
+    const { id, idTema } = req.params;
+    const { nombre, contenido, precio, url } = req.body;
 
     if (req.tipo === 'Profesor') {
         try {
-            const curso = await Curso.findById(cursoId);
+            const curso = await Curso.findById(id);
 
             if (!curso) {
                 return res.status(404).json({ error: 'Curso no encontrado' });
             }
 
-            const tema = curso.temas.id(temaId);
+            const tema = curso.temas.id(idTema);
 
             if (!tema) {
                 return res.status(404).json({ error: 'Tema no encontrado' });
             }
 
+            if (precio === 0) {
+                tema.pagado = true;
+            }
+
             tema.nombre = nombre || tema.nombre;
             tema.contenido = contenido || tema.contenido;
+            tema.url = url || tema.url;
+            tema.precio = precio || tema.precio;
 
             await curso.save();
 
@@ -175,11 +211,11 @@ const temaPut = async (req = request, res = response) => {
 };
 
 const temaDelete = async (req = request, res = response) => {
-    const { cursoId, temaId } = req.params;
+    const { id, temaId } = req.params;
 
     if (req.tipo === 'Profesor') {
         try {
-            const curso = await Curso.findById(cursoId);
+            const curso = await Curso.findById(id);
 
             if (!curso) {
                 return res.status(404).json({ error: 'Curso no encontrado' });
@@ -206,6 +242,7 @@ module.exports = {
     cursoDelete,
     temaPost,
     temasGet,
+    temaGetById,
     temaPut,
     temaDelete
 }

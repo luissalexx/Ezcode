@@ -2,8 +2,8 @@ const { Router } = require('express');
 const { validarJWT } = require('../middlewares/validar-jwt');
 const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
-const { CursoExiste} = require('../helpers/db-validators');
-const { cursoGet, cursoUpdateStatus, cursoUpdate, cursoDelete, temaPost, temasGet, temaPut, temaDelete } = require('../controllers/cursoc');
+const { CursoExiste } = require('../helpers/db-validators');
+const { cursoGet, cursoUpdateStatus, cursoUpdate, cursoDelete, temaPost, temasGet, temaPut, temaDelete, temaGetById } = require('../controllers/cursoc');
 
 const router = Router();
 
@@ -14,7 +14,6 @@ router.put('/details/:id', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('categoria', 'La categoria es obligatoria').not().isEmpty(),
     check('descripcion', 'La descripcion es obligatoria').not().isEmpty(),
-    check('precio', 'El precio es obligatorio').not().isEmpty(),
     check('id').custom(CursoExiste),
     validarCampos
 ], cursoUpdate);
@@ -31,22 +30,19 @@ router.delete('/:id', [
 ], cursoDelete);
 
 router.post('/tema/:id', [
-    validarJWT,
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('contenido', 'El contenido es obligatorio').not().isEmpty(),
-    validarCampos
 ], temaPost);
 
-router.get('/tema/:id', temasGet);
+router.get('/temas/:id', temasGet);
 
-router.put('/tema/:idCurso/:idTema', [
+router.get('/tema/:id/:idTema', temaGetById);
+
+router.put('/tema/:id/:idTema', [
     validarJWT,
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
-    check('contenido', 'El contenido es obligatorio').not().isEmpty(),
-    validarCampos
 ], temaPut);
 
-router.delete('/tema/:id', [
+router.delete('/tema/:id/:temaId', [
     validarJWT,
     check('id', 'No es un id de Mongo válido').isMongoId(),
     check('id').custom(CursoExiste),

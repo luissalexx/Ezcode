@@ -7,8 +7,19 @@ const TemaSchema = new Schema({
     },
     contenido: {
         type: String,
-        required: [true, 'El contenido del tema es obligatorio']
-    }
+    },
+    url: {
+        type: String,
+    },
+    pagado: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    precio: {
+        type: Number,
+        default: 1,
+    },
 });
 
 const CursoSchema = new Schema({
@@ -42,7 +53,11 @@ const CursoSchema = new Schema({
         ref: 'Profesor',
         required: true
     },
-    temas: [TemaSchema]
+    carpeta: {
+        type: String,
+        default: ''
+    },
+    temas: [TemaSchema],
 
 });
 

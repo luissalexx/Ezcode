@@ -10,71 +10,73 @@ const Cliente = require('../models/Cliente');
 const { PAYPAL_API, PAYPAL_API_CLIENT, PAYPAL_API_SECRET } = process.env;
 
 const createOrder = async (req = request, res = response) => {
-    const { precio, nombre } = req.params;
-    const { idProducto, idCliente } = req.body;
+    try {
+        const { precio, nombre } = req.params;
+        const { idProducto, idCliente } = req.body;
 
-    const solicitudRes = await SolicitudCurso.findOne({ anuncio: idProducto });
-    const solicitudId = solicitudRes._id;
+        const solicitudRes = await SolicitudCurso.findOne({ anuncio: idProducto });
+        const solicitudId = solicitudRes._id;
 
-    const order = {
-        intent: "CAPTURE",
-        purchase_units: [
-            {
-                amount: {
-                    currency_code: "MXN",
-                    value: `${precio}`,
+        const order = {
+            intent: "CAPTURE",
+            purchase_units: [
+                {
+                    amount: {
+                        currency_code: "MXN",
+                        value: `${precio}`,
+                    },
+                    description: `${nombre}`,
                 },
-                description: `${nombre}`,
+            ],
+            application_context: {
+                brand_name: "Ezecode",
+                landing_page: "NO_PREFERENCE",
+                user_action: "PAY_NOW",
+                return_url: `http://localhost:8080/api/pago/capture-order/${solicitudId}/${idCliente}`,
+                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
             },
-        ],
-        application_context: {
-            brand_name: "Ezecode",
-            landing_page: "NO_PREFERENCE",
-            user_action: "PAY_NOW",
-            return_url: `http://localhost:8080/api/pago/capture-order/${solicitudId}/${idCliente}`,
-            cancel_url: `http://localhost:8080/api/pago/cancel-order`,
-        },
-    };
+        };
 
-    const params = new URLSearchParams();
-    params.append("grant_type", "client_credentials");
+        const params = new URLSearchParams();
+        params.append("grant_type", "client_credentials");
 
-    // Generate an access token
-    const {
-        data: { access_token },
-    } = await axios.post(
-        "https://api-m.sandbox.paypal.com/v1/oauth2/token",
-        params,
-        {
-            headers: {
-                "Content-Type": "application/x-www-form-urlencoded",
-            },
-            auth: {
-                username: PAYPAL_API_CLIENT,
-                password: PAYPAL_API_SECRET,
-            },
-        }
-    );
+        const { data: { access_token } } = await axios.post(
+            "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+            params,
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                auth: {
+                    username: PAYPAL_API_CLIENT,
+                    password: PAYPAL_API_SECRET,
+                },
+            }
+        );
 
-    // make a request
-    const response = await axios.post(
-        `${PAYPAL_API}/v2/checkout/orders`,
-        order,
-        {
-            headers: {
-                Authorization: `Bearer ${access_token}`,
-            },
-        }
-    );
-    return res.json(response.data);
+        const paypalResponse = await axios.post(
+            `${PAYPAL_API}/v2/checkout/orders`,
+            order,
+            {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                },
+            }
+        );
+
+        return res.json(paypalResponse.data);
+    } catch (error) {
+        console.error(`Error creating order: ${error.message}`);
+        return res.status(500).json({ message: "Internal Server error" });
+    }
 };
 
 const captureOrder = async (req = request, res = response) => {
-    const { idSolicitud, idCliente } = req.params;
-    const { token } = req.query;
-
     try {
-        const response = await axios.post(
+        const { idSolicitud, idCliente } = req.params;
+        const { token } = req.query;
+
+        const captureResponse = await axios.post(
             `${PAYPAL_API}/v2/checkout/orders/${token}/capture`,
             {},
             {
@@ -85,9 +87,8 @@ const captureOrder = async (req = request, res = response) => {
             }
         );
 
-        if (response) {
+        if (captureResponse) {
             try {
-
                 const solicitud = await SolicitudCurso.findByIdAndUpdate(
                     idSolicitud,
                     { pagado: true },
@@ -97,7 +98,7 @@ const captureOrder = async (req = request, res = response) => {
                 const profesor = await Profesor.findById(solicitud.profesor);
                 const anuncio = await Anuncio.findById(solicitud.anuncio);
                 profesor.notificaciones.push({
-                    mensaje: `Han completado la compra del curso: ${anuncio.nombre}, revisa tu panel de cuenta`
+                    mensaje: `Han completado la compra del curso: ${anuncio.nombre}, revisa tu panel de cuenta`,
                 });
                 await profesor.save();
 
@@ -108,7 +109,7 @@ const captureOrder = async (req = request, res = response) => {
                     imagen: anuncio.imagen,
                     profesor: solicitud.profesor,
                     alumno: idCliente,
-                }
+                };
 
                 if (solicitud.pagado == true) {
                     const curso = new Curso(data);
@@ -116,21 +117,20 @@ const captureOrder = async (req = request, res = response) => {
 
                     const alumno = await Cliente.findById(curso.alumno);
                     profesor.notificaciones.push({
-                        mensaje: `Se ha creado el curso: ${curso.nombre}, revisa tu panel de cuenta`
+                        mensaje: `Se ha creado el curso: ${curso.nombre}, revisa tu panel de cuenta`,
                     });
                     await alumno.save();
 
                     await SolicitudCurso.findByIdAndDelete(idSolicitud);
                 }
-
             } catch (error) {
-                console.log(error)
+                console.error(`Error processing capture response: ${error.message}`);
             }
         }
 
         let fullName, paymentStatus, paymentAmount;
 
-        response.data.purchase_units.forEach((purchaseUnit, index) => {
+        captureResponse.data.purchase_units.forEach((purchaseUnit, index) => {
             fullName = purchaseUnit.shipping.name.full_name;
             const paymentCapture = purchaseUnit.payments.captures[0];
             if (paymentCapture) {
@@ -142,10 +142,119 @@ const captureOrder = async (req = request, res = response) => {
         generatePDF({ fullName, paymentStatus, paymentAmount }, res);
 
     } catch (error) {
-        console.log(error.message);
+        console.error(`Error capturing order: ${error.message}`);
         return res.status(500).json({ message: "Internal Server error" });
     }
-}
+};
+
+const createOrderTema = async (req = request, res = response) => {
+    try {
+        const { precio, nombre, idTema } = req.params;
+
+        const order = {
+            intent: "CAPTURE",
+            purchase_units: [
+                {
+                    amount: {
+                        currency_code: "MXN",
+                        value: `${precio}`,
+                    },
+                    description: `${nombre}`,
+                },
+            ],
+            application_context: {
+                brand_name: "Ezecode",
+                landing_page: "NO_PREFERENCE",
+                user_action: "PAY_NOW",
+                return_url: `http://localhost:8080/api/pago/capture-order-tema/${idTema}`,
+                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
+            },
+        };
+
+        const params = new URLSearchParams();
+        params.append("grant_type", "client_credentials");
+
+        const { data: { access_token } } = await axios.post(
+            "https://api-m.sandbox.paypal.com/v1/oauth2/token",
+            params,
+            {
+                headers: {
+                    "Content-Type": "application/x-www-form-urlencoded",
+                },
+                auth: {
+                    username: PAYPAL_API_CLIENT,
+                    password: PAYPAL_API_SECRET,
+                },
+            }
+        );
+
+        const paypalResponse = await axios.post(
+            `${PAYPAL_API}/v2/checkout/orders`,
+            order,
+            {
+                headers: {
+                    Authorization: `Bearer ${access_token}`,
+                },
+            }
+        );
+
+        return res.json(paypalResponse.data);
+    } catch (error) {
+        console.error(`Error creating order: ${error.message}`);
+        return res.status(500).json({ message: "Internal Server error" });
+    }
+};
+
+const captureOrderTema = async (req = request, res = response) => {
+    try {
+        const { idTema } = req.params;
+        const { token } = req.query;
+
+        const captureResponse = await axios.post(
+            `${PAYPAL_API}/v2/checkout/orders/${token}/capture`,
+            {},
+            {
+                auth: {
+                    username: PAYPAL_API_CLIENT,
+                    password: PAYPAL_API_SECRET,
+                },
+            }
+        );
+
+        if (captureResponse) {
+            try {
+                const curso = await Curso.findOneAndUpdate(
+                    { 'temas._id': idTema },
+                    { $set: { 'temas.$.pagado': true } },
+                    { new: true }
+                );
+
+                if (!curso) {
+                    return res.status(404).json({ mensaje: 'Tema no encontrado' });
+                }
+            } catch (error) {
+                console.error(`Error processing capture response: ${error.message}`);
+            }
+        }
+
+        let fullName, paymentStatus, paymentAmount;
+
+        captureResponse.data.purchase_units.forEach((purchaseUnit, index) => {
+            fullName = purchaseUnit.shipping.name.full_name;
+            const paymentCapture = purchaseUnit.payments.captures[0];
+            if (paymentCapture) {
+                paymentStatus = paymentCapture.status;
+                paymentAmount = paymentCapture.amount.value;
+            }
+        });
+
+        generatePDF({ fullName, paymentStatus, paymentAmount }, res);
+
+    } catch (error) {
+        console.error(`Error capturing order: ${error.message}`);
+        return res.status(500).json({ message: "Internal Server error" });
+    }
+};
 
 const generatePDF = (data, res) => {
     const doc = new PDFDocument();
@@ -188,5 +297,7 @@ const cancelOrder = async (req = request, res = response) => {
 module.exports = {
     createOrder,
     captureOrder,
-    cancelOrder
+    cancelOrder,
+    createOrderTema,
+    captureOrderTema
 }

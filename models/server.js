@@ -20,6 +20,8 @@ class Server {
         this.solicitudCursoPath = '/api/solicitudC';
         this.busquedaPath = '/api/busqueda';
         this.paymentPath = '/api/pago';
+        this.drivePath = '/api/drive';
+        this.calendarPath = '/api/calendar';
 
         //middlewares
         this.middlewares();
@@ -42,9 +44,9 @@ class Server {
         //Public directory
         this.app.use(express.static('public'));
 
-        this.app.use( fileUpload({
-            useTempFiles : true,
-            tempFileDir : '/tmp/',
+        this.app.use(fileUpload({
+            useTempFiles: true,
+            tempFileDir: '/tmp/',
             createParentPath: true
         }));
     }
@@ -61,6 +63,8 @@ class Server {
         this.app.use(this.solicitudCursoPath, require('../routes/solicitudCurso.routes'));
         this.app.use(this.busquedaPath, require('../routes/busqueda.routes'));
         this.app.use(this.paymentPath, require('../routes/payment.routes'));
+        this.app.use(this.drivePath, require('../routes/drive.routes'));
+        this.app.use(this.calendarPath, require('../routes/calendar.routes'));
     }
 
     async connection() {
