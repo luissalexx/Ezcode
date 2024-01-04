@@ -36,7 +36,7 @@ const createAndShareFolder = async (req = request, res = response) => {
 
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        res.status(500).json(error);
     }
 }
 
