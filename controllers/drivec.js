@@ -59,7 +59,6 @@ const createFolder = async (folderName) => {
     }
 };
 
-
 const shareFolder = async (folderId, emailAddress) => {
     try {
         await drive.permissions.create({
