@@ -5,12 +5,14 @@ const { Readable } = require('stream');
 const fs = require('fs').promises;
 const { GOOGLE_CLIENT_EMAIL, GOOGLE_PRIVATE_KEY } = process.env;
 
+const cleanedPrivateKey = GOOGLE_PRIVATE_KEY.replace(/\n/g, '');
+
 const drive = google.drive({
     version: 'v3',
     auth: new google.auth.JWT(
         GOOGLE_CLIENT_EMAIL,
         null,
-        GOOGLE_PRIVATE_KEY,
+        cleanedPrivateKey,
         ['https://www.googleapis.com/auth/drive']
     ),
 });
@@ -36,7 +38,7 @@ const createAndShareFolder = async (req = request, res = response) => {
 
     } catch (error) {
         console.error('Error:', error);
-        res.status(500).json(error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 }
 
