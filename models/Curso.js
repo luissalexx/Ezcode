@@ -1,5 +1,23 @@
 const { Schema, model } = require('mongoose');
 
+const MensajeSchema = new Schema({
+    usuarioId: {
+        type: Schema.Types.ObjectId,
+        required: true,
+    },
+    userName: {
+        type: String,
+    },
+    message: {
+        type: String,
+        required: true,
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
 const TemaSchema = new Schema({
     nombre: {
         type: String,
@@ -58,6 +76,7 @@ const CursoSchema = new Schema({
         default: ''
     },
     temas: [TemaSchema],
+    historialMensajes: [MensajeSchema],
 
 });
 

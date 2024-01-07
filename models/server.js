@@ -2,12 +2,19 @@ const express = require('express');
 const cors = require('cors');
 const { dbConnection } = require('../database/config')
 const fileUpload = require('express-fileupload');
+const { handleConnection } = require('../controllers/socketsc');
 
 class Server {
 
     constructor() {
         this.app = express();
         this.port = process.env.PORT;
+        this.server = require('http').createServer(this.app);
+        this.io = require('socket.io')(this.server, {
+            cors: {
+                origin: process.env.CLIENT_HOST
+            }
+        });
 
         this.usuariosPath = '/api/user';
         this.profesoresPath = '/api/profesor';
@@ -31,6 +38,8 @@ class Server {
 
         //Database connection
         this.connection();
+
+        this.sockets();
 
     }
 
@@ -71,8 +80,14 @@ class Server {
         await dbConnection();
     }
 
+    sockets() {
+        this.io.on('connection', (socket) => {
+            handleConnection(this.io, socket);
+        });
+    }
+
     listen() {
-        this.app.listen(this.port, () => {
+        this.server.listen(this.port, () => {
             console.log('Servidor corriendo en puerto', this.port);
         });
     }
