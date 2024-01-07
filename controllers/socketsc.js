@@ -67,8 +67,9 @@ async function handleChatMessage(io, socket, token, courseId, message) {
                 };
 
                 await saveChatMessageToDatabase(courseId, chatMessage);
-
+                console.log(chatMessage);
                 io.to(courseId).emit('chat message', chatMessage);
+
             }
         }
     } catch (error) {
