@@ -83,6 +83,7 @@ class Server {
     sockets() {
         this.io.on('connection', (socket) => {
             handleConnection(this.io, socket);
+            console.log(`cliente conectado: ${socket}`);
         });
     }
 
