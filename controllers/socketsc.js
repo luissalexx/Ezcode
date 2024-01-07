@@ -8,6 +8,7 @@ const connectedUsers = {};
 function handleConnection(io, socket) {
     socket.on('disconnect', () => {
         handleDisconnect(io, socket);
+        console.log(`El ususario se desconectó: ${socket}`)
     });
 
     socket.on('join course', ({ token, courseId }) => {
