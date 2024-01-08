@@ -8,7 +8,6 @@ const connectedUsers = {};
 function handleConnection(io, socket) {
     socket.on('disconnect', () => {
         handleDisconnect(io, socket);
-        console.log(`El ususario se desconectó: ${socket}`)
     });
 
     socket.on('join course', ({ token, courseId }) => {
@@ -68,9 +67,8 @@ async function handleChatMessage(io, socket, token, courseId, message) {
                 };
 
                 await saveChatMessageToDatabase(courseId, chatMessage);
-                console.log(chatMessage);
-                io.to(courseId).emit('chat message', chatMessage);
 
+                io.to(courseId).emit('chat message', chatMessage);
             }
         }
     } catch (error) {
