@@ -97,11 +97,194 @@ const notificacionesDelete = async (req = request, res = response) => {
     }
 };
 
+const reportarUsusario = async (req = request, res = response) => {
+    const { userId } = req.params;
+    const { tipo, motivo } = req.body;
+
+    try {
+        const cliente = await Cliente.findById(userId);
+
+        const reporte = {
+            tipo,
+            motivo,
+        };
+
+        cliente.reportes.push(reporte);
+        await cliente.save();
+
+        res.status(200).json(cliente);
+
+    } catch (error) {
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+}
+
+const buscarClientesConReportes = async (req = request, res = response) => {
+    try {
+
+        const clientesConReportes = await Cliente.find({ "reportes": { $exists: true, $not: { $size: 0 } } });
+        if (clientesConReportes.length === 0) {
+            return res.status(404).json({ mensaje: 'No se encontraron clientes con reportes.' });
+        }
+
+        return res.status(200).json(clientesConReportes);
+    } catch (error) {
+        console.error('Error al buscar clientes con reportes:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+}
+
+const reportesGet = async (req = request, res = response) => {
+    const { userId } = req.params;
+
+    try {
+        const cliente = await Cliente.findById(userId);
+
+        if (!cliente) {
+            return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+        }
+
+        return res.status(200).json(cliente.reportes);
+    } catch (error) {
+        console.error('Error al buscar reportes por usuario:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
+
+const sumarPuntos = async (req = request, res = response) => {
+    const { userId } = req.params;
+    const { puntos } = req.body;
+
+    try {
+        const cliente = await Cliente.findById(userId);
+        if (!cliente) {
+            return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+        }
+
+        cliente.puntosReportes += puntos;
+        await cliente.save();
+
+        return res.status(200).json(cliente);
+    } catch (error) {
+        console.error('Error al actualizar puntosReporte:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
+
+const reporteDelete = async (req, res) => {
+    const { userId, reporteId } = req.params;
+
+    try {
+        if (req.tipo === "Administrador") {
+
+            const cliente = await Cliente.findById(userId);
+            if (!cliente) {
+                return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+            }
+
+            const indiceReporte = cliente.reportes.findIndex(report => report._id.toString() === reporteId);
+
+            if (indiceReporte === -1) {
+                return res.status(404).json({ mensaje: 'Reporte no encontrado.' });
+            }
+
+            cliente.reportes.splice(indiceReporte, 1);
+
+            await cliente.save();
+            return res.status(200).json(cliente);
+        } else {
+            return res.status(500).json({ mensaje: 'Solo los administradores pueden borrar reportes' });
+        }
+    } catch (error) {
+        console.error('Error al quitar un reporte:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
+
+const reportesDelete = async (req, res) => {
+    const { userId } = req.params;
+
+    try {
+        const cliente = await Cliente.findById(userId);
+
+        if (!cliente) {
+            return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+        }
+
+        cliente.reportes = [];
+        await cliente.save();
+
+        return res.status(200).json(cliente);
+    } catch (error) {
+        console.error('Error al eliminar los reportes de un usuario:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
+
+const banearAlumno = async (req, res) => {
+    const { userId } = req.params;
+
+    if (req.tipo === "Administrador") {
+        try {
+            const cliente = await Cliente.findById(userId);
+            if (!cliente) {
+                return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+            }
+
+            cliente.baneado = true;
+            await cliente.save();
+
+            return res.status(200).json(cliente);
+        } catch (error) {
+            console.error('Error al cambiar el valor de baneado:', error);
+            return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+        }
+    } else {
+        res.status(500).json({ error: 'Solo los administradores pueden banear usuarios' });
+    }
+};
+
+const desbanearAlumno = async (req, res) => {
+    const { userId } = req.params;
+
+    if (req.tipo === "Administrador") {
+        try {
+            const cliente = await Cliente.findById(userId);
+            if (!cliente) {
+                return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+            }
+
+            if (cliente.baneado == true) {
+                cliente.baneado = false;
+                await cliente.save();
+                return res.status(200).json(cliente);
+            } else {
+                return res.status(500).json({ mensaje: 'El usuario no esta baneado' });
+            }
+
+        } catch (error) {
+            console.error('Error al cambiar el valor de baneado:', error);
+            return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+        }
+    } else {
+        res.status(500).json({ error: 'Solo los administradores pueden desbanear usuarios' });
+    }
+};
+
+
 module.exports = {
     userPost,
     userGet,
     userUpdate,
     userDelete,
     notificacionesGet,
-    notificacionesDelete
+    notificacionesDelete,
+    reportarUsusario,
+    buscarClientesConReportes,
+    reportesGet,
+    sumarPuntos,
+    reporteDelete,
+    banearAlumno,
+    reportesDelete,
+    desbanearAlumno
 }

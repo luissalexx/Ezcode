@@ -109,6 +109,7 @@ const captureOrder = async (req = request, res = response) => {
                     imagen: anuncio.imagen,
                     profesor: solicitud.profesor,
                     alumno: idCliente,
+                    anuncio: anuncio._id
                 };
 
                 if (solicitud.pagado == true) {

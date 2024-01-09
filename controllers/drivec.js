@@ -104,7 +104,8 @@ const uploadFileToFolder = async (req, res) => {
         });
 
         const fileId = uploadedFile.data.id;
-        const fileUrl = `https://drive.google.com/file/d/${fileId}/preview`;
+        const fileUrlEmbedded = `https://drive.google.com/file/d/${fileId}/preview`;
+        const fileUrl = uploadedFile.data.webViewLink
 
         await drive.permissions.create({
             fileId: fileId,
@@ -116,40 +117,52 @@ const uploadFileToFolder = async (req, res) => {
 
         await fs.unlink(req.files.archivo.tempFilePath);
 
-        res.status(200).json(fileUrl);
+        res.status(200).json({ fileUrlEmbedded, fileUrl, fileId });
     } catch (error) {
         console.error('Error:', error.message || error);
         res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
-const getDriveFolderLink = async (folderId) => {
+const deleteFileFromFolder = async (req, res) => {
+    const { fileId, idCurso, idTarea } = req.params;
+
     try {
-        const response = await drive.files.get({
-            fileId: folderId,
-            fields: 'webViewLink',
+        if (!fileId) {
+            return res.status(400).json({ error: 'File ID not provided' });
+        }
+
+        const response = await drive.files.delete({
+            fileId: fileId,
         });
 
-        return response.data.webViewLink;
-    } catch (error) {
-        throw new Error(`Error al obtener el enlace de la carpeta: ${error.message}`);
-    }
-};
+        if (response) {
 
-const sendDriveFolderLink = async (req, res) => {
-    const { folderId } = req.params;
+            const curso = await Curso.findById(idCurso);
+            if (!curso) {
+                return res.status(404).json({ error: 'Curso no encontrado' });
+            }
 
-    try {
-        const driveFolderLink = await getDriveFolderLink(folderId);
-        res.status(200).json({ link: driveFolderLink });
+            const tarea = curso.tareas.id(idTarea);
+            if (!tarea) {
+                return res.status(404).json({ error: 'Tarea no encontrada' });
+            }
+
+            tarea.entregada = false;
+            tarea.url = '';
+            tarea.archivoId = '';
+            await curso.save();
+
+            res.status(200).json({ message: 'File deleted successfully' });
+        }
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Error interno del servidor' });
+        console.error('Error:', error.message || error);
+        res.status(500).json({ error: 'Internal Server Error' });
     }
 };
 
 module.exports = {
     createAndShareFolder,
     uploadFileToFolder,
-    sendDriveFolderLink
+    deleteFileFromFolder
 }

@@ -54,8 +54,6 @@ async function handleChatMessage(io, socket, token, courseId, message) {
         const usersInCourse = connectedUsers[courseId];
         if (usersInCourse) {
             const timestamp = new Date().toISOString();
-
-            // Obtén la información del usuario, incluido el tipo
             const user = await findUserById(decoded.uid);
 
             if (user) {
@@ -107,9 +105,7 @@ async function saveChatMessageToDatabase(courseId, chatMessage) {
         if (curso) {
             curso.historialMensajes.push(chatMessage);
 
-            // Verificar si se supera el límite de mensajes
             if (curso.historialMensajes.length > maxMessages) {
-                // Eliminar los mensajes más antiguos
                 const mensajesExcedentes = curso.historialMensajes.length - maxMessages;
                 curso.historialMensajes.splice(0, mensajesExcedentes);
             }

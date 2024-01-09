@@ -1,11 +1,25 @@
 const { Schema, model } = require('mongoose');
 
+const ReporteSchema = new Schema({
+    tipo: {
+        type: String,
+        required: [true, 'El tipo es obligatorio']
+    },
+    motivo: {
+        type: String,
+        required: [true, 'El mensaje es obligatorio']
+    },
+    fecha: {
+        type: Date,
+        default: Date.now
+    }
+})
+
 const NotificacionSchema = new Schema({
     mensaje: {
         type: String,
         required: [true, 'El mensaje es obligatorio']
     },
-
     fecha: {
         type: Date,
         default: Date.now
@@ -45,7 +59,16 @@ const ClienteSchema = new Schema({
         type: Number,
         default: 0
     },
-    notificaciones: [NotificacionSchema]
+    notificaciones: [NotificacionSchema],
+    baneado: {
+        type: Boolean,
+        default: false
+    },
+    puntosReportes: {
+        type: Number,
+        default: 0
+    },
+    reportes: [ReporteSchema]
 });
 
 ClienteSchema.methods.toJSON = function () {

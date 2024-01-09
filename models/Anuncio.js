@@ -1,5 +1,17 @@
 const { Schema, model } = require('mongoose');
 
+const ResenaSchema = new Schema({
+    estrellas: {
+        type: Number,
+        default: 0,
+    },
+    alumno: {
+        type: Schema.Types.ObjectId,
+        ref: 'Cliente',
+        required: true
+    },
+})
+
 const AnuncioSchema = new Schema({
     nombre: {
         type: String,
@@ -33,13 +45,18 @@ const AnuncioSchema = new Schema({
     createdAt: {
         type: Date,
         default: Date.now
-    }
+    },
+    calificacion: {
+        type: Number,
+        default: 0,
+    },
+    resena: [ResenaSchema]
 });
 
-AnuncioSchema.methods.toJSON = function(){
-    const { __v, _id, ...anuncio} = this.toObject();
-    anuncio.uid= _id;
+AnuncioSchema.methods.toJSON = function () {
+    const { __v, _id, ...anuncio } = this.toObject();
+    anuncio.uid = _id;
     return anuncio;
 }
 
-module.exports = model( 'Anuncio', AnuncioSchema );
+module.exports = model('Anuncio', AnuncioSchema);

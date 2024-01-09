@@ -1,9 +1,10 @@
 const { Router } = require('express');
-const { profePost, profeGet, profeUpdate, profeDelete, notificacionesGet, notificacionesDelete } = require('../controllers/profesorc');
+const { profePost, profeGet, profeUpdate, profeDelete, notificacionesGet, notificacionesDelete, reportarProfesor, buscarProfesoresConReportes, sumarPuntos, reporteDelete, reportesDelete, banearProfesor, desbanearProfesor } = require('../controllers/profesorc');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { ProfesorExiste, EmailProfeExiste, EmailAdminExiste, EmailExiste } = require('../helpers/db-validators');
 const { check } = require('express-validator');
 const { validarJWT } = require('../middlewares/validar-jwt');
+const { reportesGet } = require('../controllers/usersc');
 
 const router = Router();
 
@@ -35,6 +36,41 @@ router.delete('/:id', [
     validarCampos
 ], profeDelete);
 
+router.post('/reporte/:userId', [
+    check('tipo', 'El tipo es obligatorio').not().isEmpty(),
+    check('motivo', 'El motivo es obligatorio').not().isEmpty(),
+    validarCampos
+], reportarProfesor);
 
+router.get('/reportes', buscarProfesoresConReportes);
+
+router.get('/reportesProfesor/:userId', reportesGet);
+
+router.put('/reportePuntos/:userId', [
+    check('id', 'No es un id valido').isMongoId(),
+    check('id').custom(ProfesorExiste),
+    check('puntos', 'Los puntos son obligatorios').not().isEmpty(),
+    validarCampos
+], sumarPuntos);
+
+router.delete('/reporte/:userId/:reporteId', [
+    validarJWT,
+], reporteDelete);
+
+router.delete('/reportes/:userId', reportesDelete);
+
+router.put('/banear/:userId', [
+    validarJWT,
+    check('id', 'No es un id valido').isMongoId(),
+    check('id').custom(ProfesorExiste),
+    validarCampos
+], banearProfesor);
+
+router.put('/desbanear/:userId', [
+    validarJWT,
+    check('id', 'No es un id valido').isMongoId(),
+    check('id').custom(ProfesorExiste),
+    validarCampos
+], desbanearProfesor);
 
 module.exports = router;

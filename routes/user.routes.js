@@ -1,5 +1,5 @@
 const { Router } = require('express');
-const { userPost, userGet, userUpdate, userDelete, notificacionesGet, notificacionesDelete } = require('../controllers/usersc');
+const { userPost, userGet, userUpdate, userDelete, notificacionesGet, notificacionesDelete, reportarUsusario, buscarClientesConReportes, reportesGet, sumarPuntos, reporteDelete, reportesDelete, banearAlumno, desbanearAlumno } = require('../controllers/usersc');
 const { validarCampos } = require('../middlewares/validar-campos');
 const { check } = require('express-validator');
 const { UsuarioExiste, EmailAdminExiste, EmailExiste, EmailProfeExiste } = require('../helpers/db-validators');
@@ -35,5 +35,41 @@ router.delete('/:id', [
     validarCampos
 ], userDelete);
 
+router.post('/reporte/:userId', [
+    check('tipo', 'El tipo es obligatorio').not().isEmpty(),
+    check('motivo', 'El motivo es obligatorio').not().isEmpty(),
+    validarCampos
+], reportarUsusario);
+
+router.get('/reportes', buscarClientesConReportes);
+
+router.get('/reportesUsuario/:userId', reportesGet);
+
+router.put('/reportePuntos/:userId', [
+    check('id', 'No es un id valido').isMongoId(),
+    check('id').custom(UsuarioExiste),
+    check('puntos', 'Los puntos son obligatorios').not().isEmpty(),
+    validarCampos
+], sumarPuntos);
+
+router.delete('/reporte/:userId/:reporteId', [
+    validarJWT,
+], reporteDelete);
+
+router.delete('/reportes/:userId', reportesDelete);
+
+router.put('/banear/:userId', [
+    validarJWT,
+    check('id', 'No es un id valido').isMongoId(),
+    check('id').custom(UsuarioExiste),
+    validarCampos
+], banearAlumno);
+
+router.put('/desbanear/:userId', [
+    validarJWT,
+    check('id', 'No es un id valido').isMongoId(),
+    check('id').custom(UsuarioExiste),
+    validarCampos
+], desbanearAlumno);
 
 module.exports = router;

@@ -1,5 +1,37 @@
 const { Schema, model } = require('mongoose');
 
+const TareaSchema = new Schema({
+    nombre: {
+        type: String,
+        required: [true, 'El nombre del tema es obligatorio']
+    },
+    url: {
+        type: String,
+        required: false
+    },
+    archivoId: {
+        type: String,
+        required: false
+    },
+    asignacion: {
+        type: String,
+        required: true,
+    },
+    entregada: {
+        type: Boolean,
+        required: true,
+        default: false
+    },
+    calificacion: {
+        type: Number,
+        default: 0
+    },
+    timestamp: {
+        type: Date,
+        default: Date.now,
+    },
+});
+
 const MensajeSchema = new Schema({
     usuarioId: {
         type: Schema.Types.ObjectId,
@@ -61,6 +93,10 @@ const CursoSchema = new Schema({
         required: true,
         default: false
     },
+    calificacion: {
+        type: Number,
+        default: 0
+    },
     alumno: {
         type: Schema.Types.ObjectId,
         ref: 'Cliente',
@@ -71,13 +107,18 @@ const CursoSchema = new Schema({
         ref: 'Profesor',
         required: true
     },
+    anuncio: {
+        type: Schema.Types.ObjectId,
+        ref: 'Anuncio',
+        required: true
+    },
     carpeta: {
         type: String,
         default: ''
     },
     temas: [TemaSchema],
     historialMensajes: [MensajeSchema],
-
+    tareas: [TareaSchema]
 });
 
 CursoSchema.methods.toJSON = function () {

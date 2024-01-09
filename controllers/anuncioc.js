@@ -43,6 +43,21 @@ const anunciosGet = async (req = request, res = response) => {
     })
 }
 
+const popularesGet = async (req = request, res = response) => {
+    try {
+        const anuncios = await Anuncio.find().sort({ calificacion: -1 }).populate('profesor', 'nombre apellido correo');
+
+        if (!anuncios || anuncios.length === 0) {
+            return res.status(404).json({ message: 'No se encontraron anuncios' });
+        }
+
+        res.json(anuncios);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ message: 'Internal Server Error' });
+    }
+}
+
 const anuncioGetById = async (req = request, res = response) => {
     const { id } = req.params;
     try {
@@ -64,7 +79,7 @@ const anuncioUpdate = async (req = request, res = response) => {
 
     if (req.tipo === 'Profesor') {
         try {
-            const anuncio = await Anuncio.findByIdAndUpdate(id, data, {new: true});
+            const anuncio = await Anuncio.findByIdAndUpdate(id, data, { new: true });
             res.status(200).json(anuncio)
         } catch (error) {
             res.status(400).json(error);
@@ -76,7 +91,6 @@ const anuncioUpdate = async (req = request, res = response) => {
 
 const anuncioUpdateStatus = async (req = request, res = response) => {
     const { id } = req.params;
-    const { estado } = req.body;
 
     if (req.tipo === 'Administrador') {
         try {
@@ -89,6 +103,66 @@ const anuncioUpdateStatus = async (req = request, res = response) => {
         res.status(403).json({ error: 'Solo los administradores pueden aprobar anuncios.' });
     }
 }
+
+const resenaPost = async (req, res) => {
+    try {
+        const { anuncioId, alumnoId } = req.params;
+        const { estrellas } = req.body;
+
+        const anuncio = await Anuncio.findById(anuncioId);
+
+        if (!anuncio) {
+            return res.status(404).json({ error: 'Anuncio no encontrado' });
+        }
+
+        const alumnoYaCalifico = anuncio.resena.some(resena => resena.alumno.toString() === alumnoId);
+
+        if (alumnoYaCalifico) {
+            return res.status(400).json({ error: 'El alumno ya ha realizado una reseña previa para este curso' });
+        }
+
+        const nuevaResena = {
+            estrellas,
+            alumno: alumnoId,
+        };
+
+        anuncio.resena.push(nuevaResena);
+
+        actualizarTotalRating(anuncio);
+
+        await anuncio.save();
+
+        res.status(201).json({ message: 'Reseña creada con éxito' });
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error interno del servidor' });
+    }
+};
+
+const actualizarTotalRating = (anuncio) => {
+    const totalResenas = anuncio.resena.length;
+    const totalEstrellas = anuncio.resena.reduce((total, resena) => total + resena.estrellas, 0);
+
+    anuncio.calificacion = totalResenas > 0 ? totalEstrellas / totalResenas : 0;
+}
+
+const resenasGet = async (req, res) => {
+    try {
+        const { anuncioId } = req.params;
+        const anuncio = await Anuncio.findById(anuncioId).populate('resena.alumno');
+
+        if (!anuncio) {
+            return res.status(404).json({ error: 'Anuncio no encontrado' });
+        }
+
+        const resenas = anuncio.resena;
+
+        res.status(200).json(resenas);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Error interno del servidor', details: error.message });
+    }
+};
 
 const anunciosDelete = async (req, res) => {
     try {
@@ -129,9 +203,12 @@ const anuncioDelete = async (req = request, res = response) => {
 module.exports = {
     anuncioPost,
     anunciosGet,
+    popularesGet,
     anuncioGetById,
     anuncioUpdate,
     anuncioUpdateStatus,
     anuncioDelete,
-    anunciosDelete
+    anunciosDelete,
+    resenaPost,
+    resenasGet
 }

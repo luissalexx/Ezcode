@@ -64,7 +64,6 @@ const buscarCursoPorCorreo = async (termino = '', res = response) => {
 
         const cursos = await Curso.find({
             $and: [
-                { acreditado: false },
                 {
                     $or: [
                         { alumno: usuario._id },
