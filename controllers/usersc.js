@@ -112,7 +112,7 @@ const reportarUsusario = async (req = request, res = response) => {
         cliente.reportes.push(reporte);
         await cliente.save();
 
-        res.status(200).json(cliente);
+        res.status(200).json(reporte);
 
     } catch (error) {
         res.status(500).json({ error: 'Error interno del servidor' });
@@ -123,9 +123,6 @@ const buscarClientesConReportes = async (req = request, res = response) => {
     try {
 
         const clientesConReportes = await Cliente.find({ "reportes": { $exists: true, $not: { $size: 0 } } });
-        if (clientesConReportes.length === 0) {
-            return res.status(404).json({ mensaje: 'No se encontraron clientes con reportes.' });
-        }
 
         return res.status(200).json(clientesConReportes);
     } catch (error) {
@@ -141,7 +138,7 @@ const reportesGet = async (req = request, res = response) => {
         const cliente = await Cliente.findById(userId);
 
         if (!cliente) {
-            return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+            return res.json({ mensaje: 'Cliente no encontrado.' });
         }
 
         return res.status(200).json(cliente.reportes);
@@ -164,7 +161,27 @@ const sumarPuntos = async (req = request, res = response) => {
         cliente.puntosReportes += puntos;
         await cliente.save();
 
-        return res.status(200).json(cliente);
+        return res.status(200).json(cliente.puntosReportes);
+    } catch (error) {
+        console.error('Error al actualizar puntosReporte:', error);
+        return res.status(500).json({ mensaje: 'Error interno del servidor.' });
+    }
+};
+
+const restarPuntos = async (req = request, res = response) => {
+    const { userId } = req.params;
+    const { puntos } = req.body;
+
+    try {
+        const cliente = await Cliente.findById(userId);
+        if (!cliente) {
+            return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+        }
+
+        cliente.puntosReportes -= puntos;
+        await cliente.save();
+
+        return res.status(200).json(cliente.puntosReportes);
     } catch (error) {
         console.error('Error al actualizar puntosReporte:', error);
         return res.status(500).json({ mensaje: 'Error interno del servidor.' });
@@ -179,7 +196,7 @@ const reporteDelete = async (req, res) => {
 
             const cliente = await Cliente.findById(userId);
             if (!cliente) {
-                return res.status(404).json({ mensaje: 'Cliente no encontrado.' });
+                return res.json({ mensaje: 'Cliente no encontrado.' });
             }
 
             const indiceReporte = cliente.reportes.findIndex(report => report._id.toString() === reporteId);
@@ -283,6 +300,7 @@ module.exports = {
     buscarClientesConReportes,
     reportesGet,
     sumarPuntos,
+    restarPuntos,
     reporteDelete,
     banearAlumno,
     reportesDelete,
