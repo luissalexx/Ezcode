@@ -18,7 +18,7 @@ router.get('/', validarJWT, solicitudesGet);
 
 router.get('/aceptada', validarJWT, solicitudesAceptadasGet);
 
-router.get('/:anuncioId', solicitudGetByAnuncio);
+router.get('/get/:anuncioId', solicitudGetByAnuncio);
 
 router.put('/:id', [
     validarJWT,
