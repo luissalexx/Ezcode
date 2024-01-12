@@ -13,7 +13,7 @@ router.post('/', [
     check('anuncio').custom(AnuncioExiste),
     validarCampos
 ], solicitudPost);
-
+ 
 router.get('/', validarJWT, solicitudesGet );
 
 router.get('/:anuncioId', validarJWT, solicitudGetByAnuncio );

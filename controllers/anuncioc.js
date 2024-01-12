@@ -210,25 +210,17 @@ const anuncioDelete = async (req = request, res = response) => {
             const { id } = req.params;
             const anuncio = await Anuncio.findById(id);
 
-            if (anuncio) {
-                if (anuncio.estado) {
-                    const profesorId = anuncio.profesor;
+            if (anuncio.estado) {
+                const profesorId = anuncio.profesor;
 
-                    await Profesor.findByIdAndUpdate(
-                        profesorId,
-                        { $inc: { anuncios: -1 } },
-                        { new: true }
-                    );
-
-                    await Anuncio.findByIdAndDelete(id);
-
-                    res.json(anuncio);
-                } else {
-                    res.status(404).json({ error: 'Anuncio no encontrado.' });
-                }
-            } else {
-                res.status(404).json({ error: 'Anuncio no encontrado.' });
+                await Profesor.findByIdAndUpdate(
+                    profesorId,
+                    { $inc: { anuncios: -1 } },
+                    { new: true }
+                );
             }
+            await Anuncio.findByIdAndDelete(id);
+            res.json(anuncio);
         } catch (error) {
             res.status(500).json({ error: 'Error interno del servidor.' });
             console.error(error);

@@ -102,7 +102,7 @@ const uploadFileToFolder = async (req, res) => {
             media: media,
             fields: 'id,webViewLink',
         });
-
+ 
         const fileId = uploadedFile.data.id;
         const fileUrlEmbedded = `https://drive.google.com/file/d/${fileId}/preview`;
         const fileUrl = uploadedFile.data.webViewLink

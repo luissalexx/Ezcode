@@ -94,7 +94,7 @@ const captureOrder = async (req = request, res = response) => {
                     { pagado: true },
                     { new: true }
                 );
-
+ 
                 const profesor = await Profesor.findById(solicitud.profesor);
                 const anuncio = await Anuncio.findById(solicitud.anuncio);
                 profesor.notificaciones.push({

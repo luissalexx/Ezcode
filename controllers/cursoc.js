@@ -109,7 +109,7 @@ const cursoDelete = async (req = request, res = response) => {
     } else {
         res.status(403).json({ error: 'Solo los clientes pueden borrar cursos.' });
     }
-}
+} 
 
 const cursosDelete = async (req, res) => {
     try {

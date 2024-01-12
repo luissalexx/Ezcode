@@ -83,7 +83,7 @@ const solicitudUpdate = async (req = request, res = response) => {
 
             const alumno = await Cliente.findById(solicitud.alumno);
             const anuncio = await Anuncio.findById(solicitud.anuncio);
-
+ 
             const data = {
                 nombre: anuncio.nombre,
                 descripcion: anuncio.descripcion,

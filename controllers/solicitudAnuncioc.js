@@ -82,7 +82,7 @@ const solicitudGetByAnuncio = async (req = request, res = response) => {
         return res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
-
+ 
 const solicitudesDelete = async (req, res) => {
     try {
         const { id } = req.params;

@@ -45,7 +45,7 @@ router.delete('/:id', [
     check('id').custom(AnuncioExiste),
     validarCampos
 ], anuncioDelete);
-
+ 
 router.delete('/all/:id', [
     validarJWT,
     check('id', 'No es un id de Mongo válido').isMongoId(),
