@@ -19,7 +19,7 @@ router.get('/', validarJWT, solicitudesGet);
 router.get('/aceptada', validarJWT, solicitudesAceptadasGet);
 
 router.get('/:anuncioId', solicitudGetByAnuncio);
- 
+
 router.put('/:id', [
     validarJWT,
     check('id').custom(SolicitudCursoExiste),
