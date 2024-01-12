@@ -237,7 +237,7 @@ const banearProfesor = async (req, res) => {
             if (!profesor) {
                 return res.status(404).json({ mensaje: 'Profesor no encontrado.' });
             }
-
+            
             profesor.baneado = true;
             await profesor.save();
 

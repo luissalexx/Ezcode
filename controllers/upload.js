@@ -71,6 +71,10 @@ const actualizarImagenCloudinary = async (req, res = response) => {
             return res.status(500).json({ msg: 'Se me olvidó validar esto' });
     }
 
+    if (coleccion === 'anuncios') {
+        modelo.estado = false;
+    }
+
     if (modelo.imagen) {
         const nombreArr = modelo.imagen.split('/');
         const nombre = nombreArr[nombreArr.length - 1];

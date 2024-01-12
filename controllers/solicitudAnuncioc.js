@@ -37,7 +37,7 @@ const solicitudesGet = async (req = request, res = response) => {
     if (req.tipo === 'Administrador') {
 
         const solicitudes = await SolicitudAnuncio.find(query)
-            .populate('profesor', 'nombre apellido correo')
+            .populate('profesor', 'nombre apellido correo anuncios puntosReportes')
             .populate('anuncio', 'nombre categoria precio')
 
         res.json({

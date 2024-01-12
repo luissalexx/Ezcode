@@ -113,11 +113,14 @@ const captureOrder = async (req = request, res = response) => {
                 };
 
                 if (solicitud.pagado == true) {
+                    anuncio.suscripciones = anuncio.suscripciones + 1;
+                    await anuncio.save();
+
                     const curso = new Curso(data);
                     await curso.save();
 
                     const alumno = await Cliente.findById(curso.alumno);
-                    profesor.notificaciones.push({
+                    alumno.notificaciones.push({
                         mensaje: `Se ha creado el curso: ${curso.nombre}, revisa tu panel de cuenta`,
                     });
                     await alumno.save();

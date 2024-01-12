@@ -50,7 +50,11 @@ const AnuncioSchema = new Schema({
         type: Number,
         default: 0,
     },
-    resena: [ResenaSchema]
+    resena: [ResenaSchema],
+    suscripciones: {
+        type: Number,
+        default: 0,
+    }
 });
 
 AnuncioSchema.methods.toJSON = function () {

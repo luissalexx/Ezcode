@@ -1,5 +1,6 @@
 const { response, request } = require('express');
 const Anuncio = require('../models/Anuncio');
+const Profesor = require('../models/Profesor');
 
 const anuncioPost = async (req = request, res = response) => {
 
@@ -76,10 +77,20 @@ const anuncioUpdate = async (req = request, res = response) => {
     const { estado, profesor, ...data } = req.body;
 
     data.profesor = req.usuario._id;
+    data.estado = false;
 
     if (req.tipo === 'Profesor') {
         try {
             const anuncio = await Anuncio.findByIdAndUpdate(id, data, { new: true });
+
+            const profesorId = anuncio.profesor;
+
+            await Profesor.findByIdAndUpdate(
+                profesorId,
+                { $inc: { anuncios: -1 } },
+                { new: true }
+            );
+
             res.status(200).json(anuncio)
         } catch (error) {
             res.status(400).json(error);
@@ -95,6 +106,15 @@ const anuncioUpdateStatus = async (req = request, res = response) => {
     if (req.tipo === 'Administrador') {
         try {
             const anuncio = await Anuncio.findByIdAndUpdate(id, { estado: true }, { new: true });
+
+            const profesorId = anuncio.profesor;
+
+            await Profesor.findByIdAndUpdate(
+                profesorId,
+                { $inc: { anuncios: 1 } },
+                { new: true }
+            );
+
             res.json(anuncio)
         } catch (error) {
             res.status(400).json(error);
@@ -188,12 +208,30 @@ const anuncioDelete = async (req = request, res = response) => {
     if (req.tipo === 'Profesor') {
         try {
             const { id } = req.params;
-            const anuncio = await Anuncio.findByIdAndDelete(id);
+            const anuncio = await Anuncio.findById(id);
 
-            res.json(anuncio);
+            if (anuncio) {
+                if (anuncio.estado) {
+                    const profesorId = anuncio.profesor;
+
+                    await Profesor.findByIdAndUpdate(
+                        profesorId,
+                        { $inc: { anuncios: -1 } },
+                        { new: true }
+                    );
+
+                    await Anuncio.findByIdAndDelete(id);
+
+                    res.json(anuncio);
+                } else {
+                    res.status(404).json({ error: 'Anuncio no encontrado.' });
+                }
+            } else {
+                res.status(404).json({ error: 'Anuncio no encontrado.' });
+            }
         } catch (error) {
-            res.status(400).json(error);
-            console.log(error);
+            res.status(500).json({ error: 'Error interno del servidor.' });
+            console.error(error);
         }
     } else {
         res.status(403).json({ error: 'Solo los profesores pueden borrar anuncios.' });

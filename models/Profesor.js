@@ -69,7 +69,11 @@ const ProfeSchema = new Schema({
         type: Number,
         default: 0
     },
-    reportes: [ReporteSchema]
+    reportes: [ReporteSchema],
+    anuncios: {
+        type: Number,
+        default: 0
+    }
 });
 
 ProfeSchema.methods.toJSON = function () {

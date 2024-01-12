@@ -68,7 +68,11 @@ const ClienteSchema = new Schema({
         type: Number,
         default: 0
     },
-    reportes: [ReporteSchema]
+    reportes: [ReporteSchema],
+    desempeno: {
+        type: Number,
+        default: 0
+    }
 });
 
 ClienteSchema.methods.toJSON = function () {

@@ -49,7 +49,16 @@ const cursoUpdateStatus = async (req = request, res = response) => {
 
             if (curso.acreditado == true) {
                 const idAlumno = curso.alumno._id;
-                await Cliente.findByIdAndUpdate(idAlumno, { $inc: { acreditados: 1 } }, { new: true });
+
+                const cliente = await Cliente.findById(idAlumno);
+                const totalCursosAcreditados = cliente.acreditados + 1;
+                const nuevoDesempeno = ((cliente.desempeno * cliente.acreditados) + calificacion) / totalCursosAcreditados;
+
+                await Cliente.findByIdAndUpdate(
+                    idAlumno,
+                    { $set: { acreditados: totalCursosAcreditados, desempeno: nuevoDesempeno } },
+                    { new: true }
+                );
 
                 const idProfesor = curso.profesor._id;
                 await Profesor.findByIdAndUpdate(idProfesor, { $inc: { limiteCursos: -1 } }, { new: true });

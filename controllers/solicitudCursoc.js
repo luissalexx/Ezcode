@@ -3,6 +3,7 @@ const SolicitudCurso = require('../models/SolicitudCurso');
 const Anuncio = require('../models/Anuncio');
 const Profesor = require('../models/Profesor');
 const Cliente = require('../models/Cliente');
+const Curso = require('../models/Curso');
 
 const solicitudPost = async (req, res) => {
     const data = {
@@ -39,7 +40,7 @@ const solicitudesGet = async (req = request, res = response) => {
     if (req.tipo !== 'Administrador') {
 
         const solicitudes = await SolicitudCurso.find(query)
-            .populate('alumno', 'nombre apellido correo')
+            .populate('alumno', 'nombre apellido correo acreditados desempeno puntosReportes')
             .populate('profesor', 'nombre apellido correo')
             .populate('anuncio', 'nombre categoria precio')
 
@@ -81,7 +82,35 @@ const solicitudUpdate = async (req = request, res = response) => {
             await Profesor.findByIdAndUpdate(idProfesor, { $inc: { limiteCursos: 1 } }, { new: true });
 
             const alumno = await Cliente.findById(solicitud.alumno);
-            const anuncio = await Anuncio.findById(solicitud.anuncio)
+            const anuncio = await Anuncio.findById(solicitud.anuncio);
+
+            const data = {
+                nombre: anuncio.nombre,
+                descripcion: anuncio.descripcion,
+                categoria: anuncio.categoria,
+                imagen: anuncio.imagen,
+                profesor: solicitud.profesor,
+                alumno: alumno.uid,
+                anuncio: anuncio._id
+            };
+
+            if (anuncio.precio === 0) {
+                anuncio.suscripciones = anuncio.suscripciones + 1;
+                await anuncio.save();
+                
+                const curso = new Curso(data);
+                await curso.save();
+
+                alumno.notificaciones.push({
+                    mensaje: `Se ha creado el curso: ${curso.nombre}, revisa tu panel de cuenta`,
+                });
+                await alumno.save();
+
+                await SolicitudCurso.findByIdAndDelete(solicitud._id);
+
+                return;
+            }
+
             alumno.notificaciones.push({
                 mensaje: `Han aprobado tu solicitud del curso: ${anuncio.nombre}`
             });
