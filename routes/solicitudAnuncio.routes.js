@@ -9,7 +9,7 @@ const router = Router();
 
 router.get('/', validarJWT, solicitudesGet );
 
-router.get('/:anuncioId', validarJWT, solicitudGetByAnuncio );
+router.get('get/:anuncioId', validarJWT, solicitudGetByAnuncio );
 
 router.post('/', [
     validarJWT,
