@@ -7,10 +7,6 @@ const { AnuncioExiste, SolicitudAnuncioExiste, ProfesorExiste } = require('../he
 
 const router = Router();
 
-router.get('/', validarJWT, solicitudesGet );
-
-router.get('get/:anuncioId', validarJWT, solicitudGetByAnuncio );
-
 router.post('/', [
     validarJWT,
     check('anuncio', 'No es un id de Mongo').isMongoId(),
