@@ -83,21 +83,21 @@ const solicitudUpdate = async (req = request, res = response) => {
 
             const alumno = await Cliente.findById(solicitud.alumno);
             const anuncio = await Anuncio.findById(solicitud.anuncio);
- 
+
             const data = {
                 nombre: anuncio.nombre,
                 descripcion: anuncio.descripcion,
                 categoria: anuncio.categoria,
                 imagen: anuncio.imagen,
                 profesor: solicitud.profesor,
-                alumno: alumno.uid,
+                alumno: alumno._id,
                 anuncio: anuncio._id
             };
 
-            if (anuncio.precio === 0) {
+            if (anuncio.precio == 0) {
                 anuncio.suscripciones = anuncio.suscripciones + 1;
                 await anuncio.save();
-                
+
                 const curso = new Curso(data);
                 await curso.save();
 
@@ -108,7 +108,7 @@ const solicitudUpdate = async (req = request, res = response) => {
 
                 await SolicitudCurso.findByIdAndDelete(solicitud._id);
 
-                return;
+                return res.json(solicitud);
             }
 
             alumno.notificaciones.push({
