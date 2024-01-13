@@ -6,6 +6,8 @@ const anuncioPost = async (req = request, res = response) => {
 
     const { nombre, descripcion, categoria, imagen, precio } = req.body;
 
+    console.log('Precio received:', precio);
+
     const data = {
         nombre,
         descripcion,
@@ -219,6 +221,7 @@ const anuncioDelete = async (req = request, res = response) => {
                     { new: true }
                 );
             }
+            
             await Anuncio.findByIdAndDelete(id);
 
             res.json(anuncio);

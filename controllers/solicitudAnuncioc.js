@@ -34,7 +34,7 @@ const solicitudPost = async (req, res) => {
 const solicitudesGet = async (req = request, res = response) => {
     const query = { estado: false };
 
-    if (req.tipo === 'Administrador') {
+    if (req.tipo !== 'Cliente') {
 
         const solicitudes = await SolicitudAnuncio.find(query)
             .populate('profesor', 'nombre apellido correo anuncios puntosReportes')
@@ -82,7 +82,7 @@ const solicitudGetByAnuncio = async (req = request, res = response) => {
         return res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
- 
+
 const solicitudesDelete = async (req, res) => {
     try {
         const { id } = req.params;

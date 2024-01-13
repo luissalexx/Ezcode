@@ -30,7 +30,6 @@ router.put('/details/:id', [
     check('nombre', 'El nombre es obligatorio').not().isEmpty(),
     check('categoria', 'La categoria es obligatoria').not().isEmpty(),
     check('descripcion', 'La descripcion es obligatoria').not().isEmpty(),
-    check('precio', 'El precio es obligatorio').not().isEmpty(),
     check('id').custom(AnuncioExiste),
     validarCampos
 ], anuncioUpdate);
