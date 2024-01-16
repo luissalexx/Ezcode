@@ -32,8 +32,8 @@ const createOrder = async (req = request, res = response) => {
                 brand_name: "Ezecode",
                 landing_page: "NO_PREFERENCE",
                 user_action: "PAY_NOW",
-                return_url: `http://localhost:8080/api/pago/capture-order/${solicitudId}/${idCliente}`,
-                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
+                return_url: `https://ezcode-43gl.onrender.com/api/pago/capture-order/${solicitudId}/${idCliente}`,
+                cancel_url: `https://ezcode-43gl.onrender.com/api/pago/cancel-order`,
             },
         };
 
@@ -94,7 +94,7 @@ const captureOrder = async (req = request, res = response) => {
                     { pagado: true },
                     { new: true }
                 );
- 
+
                 const profesor = await Profesor.findById(solicitud.profesor);
                 const anuncio = await Anuncio.findById(solicitud.anuncio);
                 profesor.notificaciones.push({
