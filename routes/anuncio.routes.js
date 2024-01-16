@@ -2,7 +2,7 @@ const { Router } = require('express');
 const { validarJWT } = require('../middlewares/validar-jwt');
 const { check } = require('express-validator');
 const { validarCampos } = require('../middlewares/validar-campos');
-const { anuncioPost, anuncioGetById, anuncioUpdate, anuncioDelete, anuncioUpdateStatus, anunciosGet, anunciosDelete, resenaPost, resenasGet, popularesGet } = require('../controllers/anuncioc');
+const { anuncioPost, anuncioGetById, anuncioUpdate, anuncioDelete, anuncioUpdateStatus, anunciosGet, anunciosDelete, resenaPost, resenasGet, popularesGet, frecuentesGet } = require('../controllers/anuncioc');
 const { AnuncioExiste, ProfesorExiste } = require('../helpers/db-validators');
 
 const router = Router();
@@ -18,6 +18,8 @@ router.post('/', [
 router.get('/published/', anunciosGet);
 
 router.get('/populars/', popularesGet);
+
+router.get('/frequent/:userId', frecuentesGet);
 
 router.get('/:id', [
     check('id', 'No es un id de Mongo válido').isMongoId(),

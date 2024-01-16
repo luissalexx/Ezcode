@@ -12,6 +12,11 @@ const ReporteSchema = new Schema({
     fecha: {
         type: Date,
         default: Date.now
+    },
+    curso: {
+        type: Schema.Types.ObjectId,
+        ref: 'Curso',
+        required: true
     }
 })
 

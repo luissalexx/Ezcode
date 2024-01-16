@@ -83,7 +83,7 @@ const sendVerificationCode = async (req = request, res = response) => {
     }
 }
 
-const verifyCode = async (req = request, res = response) => {
+const verifyCode = async (req, res) => {
     const { celular, otp } = req.body;
     try {
         const verifiedResponse = await client.verify.v2
@@ -92,7 +92,15 @@ const verifyCode = async (req = request, res = response) => {
                 to: `+${celular}`,
                 code: otp,
             });
-        res.status(200).send(`OTP verificado: ${JSON.stringify(verifiedResponse)}`);
+
+        if (verifiedResponse.status === 'approved') {
+            res.status(200).send(verifiedResponse);
+        } else if (verifiedResponse.status === 'pending') {
+            res.status(400).json({
+                message: 'El código introducido es incorrecto. Por favor, verifica e intenta nuevamente.',
+                details: verifiedResponse
+            });
+        }
     } catch (error) {
         res.status(error?.status || 400).send(error?.message || 'Algo salió mal');
     }

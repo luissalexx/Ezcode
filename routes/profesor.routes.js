@@ -37,7 +37,7 @@ router.delete('/:id', [
     validarCampos
 ], profeDelete);
 
-router.post('/reporte/:userId', [
+router.post('/reporte/:userId/:curso', [
     check('tipo', 'El tipo es obligatorio').not().isEmpty(),
     check('motivo', 'El motivo es obligatorio').not().isEmpty(),
     validarCampos

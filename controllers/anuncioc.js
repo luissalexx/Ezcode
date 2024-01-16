@@ -1,6 +1,7 @@
 const { response, request } = require('express');
 const Anuncio = require('../models/Anuncio');
 const Profesor = require('../models/Profesor');
+const Curso = require('../models/Curso');
 
 const anuncioPost = async (req = request, res = response) => {
 
@@ -51,7 +52,7 @@ const popularesGet = async (req = request, res = response) => {
         const anuncios = await Anuncio.find().sort({ calificacion: -1 }).populate('profesor', 'nombre apellido correo');
 
         if (!anuncios || anuncios.length === 0) {
-            return res.status(404).json({ message: 'No se encontraron anuncios' });
+            return res.json({ message: 'No se encontraron anuncios' });
         }
 
         res.json(anuncios);
@@ -221,7 +222,7 @@ const anuncioDelete = async (req = request, res = response) => {
                     { new: true }
                 );
             }
-            
+
             await Anuncio.findByIdAndDelete(id);
 
             res.json(anuncio);
@@ -232,6 +233,40 @@ const anuncioDelete = async (req = request, res = response) => {
         }
     } else {
         res.status(403).json({ error: 'Solo los profesores pueden borrar anuncios.' });
+    }
+};
+
+const frecuentesGet = async (req = request, res = response) => {
+    const { userId } = req.params;
+
+    try {
+        const cursosUsuario = await Curso.find({ alumno: userId });
+
+        const categoriasFrecuentes = {};
+        cursosUsuario.forEach((curso) => {
+            const categoria = curso.categoria;
+            categoriasFrecuentes[categoria] = (categoriasFrecuentes[categoria] || 0) + 1;
+        });
+
+        const categoriasArray = Object.keys(categoriasFrecuentes).map((categoria) => ({
+            categoria,
+            frecuencia: categoriasFrecuentes[categoria],
+        }));
+
+        categoriasArray.sort((a, b) => b.frecuencia - a.frecuencia);
+
+        const anunciosFrecuentes = [];
+        for (const categoriaObj of categoriasArray) {
+            const anuncios = await Anuncio.find({ categoria: categoriaObj.categoria })
+                .sort({ calificacion: 'desc' })
+                .limit(5);
+
+            anunciosFrecuentes.push(...anuncios);
+        }
+
+        res.json(anunciosFrecuentes);
+    } catch (error) {
+        res.status(403).json({ error: 'Error al obtener anuncios frecuentes' });
     }
 }
 
@@ -245,5 +280,6 @@ module.exports = {
     anuncioDelete,
     anunciosDelete,
     resenaPost,
-    resenasGet
+    resenasGet,
+    frecuentesGet
 }

@@ -98,7 +98,7 @@ const notificacionesDelete = async (req = request, res = response) => {
 };
 
 const reportarUsusario = async (req = request, res = response) => {
-    const { userId } = req.params;
+    const { userId, curso } = req.params;
     const { tipo, motivo } = req.body;
 
     try {
@@ -107,6 +107,7 @@ const reportarUsusario = async (req = request, res = response) => {
         const reporte = {
             tipo,
             motivo,
+            curso
         };
 
         cliente.reportes.push(reporte);
