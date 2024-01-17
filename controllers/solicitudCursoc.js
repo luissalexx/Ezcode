@@ -102,7 +102,7 @@ const solicitudUpdate = async (req = request, res = response) => {
                 await curso.save();
 
                 alumno.notificaciones.push({
-                    mensaje: `Se ha creado el curso: ${curso.nombre}, revisa tu panel de cuenta`,
+                    mensaje: `El curso: ${curso.nombre} ya esta disponible, revisa en tu panel de cuenta`,
                 });
                 await alumno.save();
 
@@ -157,10 +157,17 @@ const solicitudesDelete = async (req, res) => {
 };
 
 const solicitudDelete = async (req = request, res = response) => {
-    if (req.tipo === 'Profesor') {
+    if (req.tipo !== 'Administrador') {
         try {
             const { id } = req.params;
-            const solicitud = await SolicitudCurso.findByIdAndDelete(id);
+            const solicitud = await SolicitudCurso.findById(id);
+
+            if (solicitud.estado == true && solicitud.pagado == false) {
+                const idProfesor = solicitud.profesor;
+                await Profesor.findByIdAndUpdate(idProfesor, { $inc: { limiteCursos: -1 } }, { new: true });
+            }
+
+            await SolicitudCurso.findByIdAndDelete(solicitud);
 
             res.json(solicitud);
         } catch (error) {
@@ -168,7 +175,7 @@ const solicitudDelete = async (req = request, res = response) => {
             console.log(error);
         }
     } else {
-        res.status(403).json({ error: 'Solo los profesores pueden quitar solicitudes.' });
+        res.status(403).json({ error: 'No tienes los permisos para borrar solicitudes de cursos' });
     }
 }
 

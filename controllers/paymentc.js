@@ -121,7 +121,7 @@ const captureOrder = async (req = request, res = response) => {
 
                     const alumno = await Cliente.findById(curso.alumno);
                     alumno.notificaciones.push({
-                        mensaje: `Se ha creado el curso: ${curso.nombre}, revisa tu panel de cuenta`,
+                        mensaje: `El curso: ${curso.nombre} ya esta disponible, revisa en tu panel de cuenta`,
                     });
                     await alumno.save();
 
@@ -170,8 +170,8 @@ const createOrderTema = async (req = request, res = response) => {
                 brand_name: "Ezecode",
                 landing_page: "NO_PREFERENCE",
                 user_action: "PAY_NOW",
-                return_url: `http://localhost:8080/api/pago/capture-order-tema/${idTema}`,
-                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
+                return_url: `https://ezcode-43gl.onrender.com/api/pago/capture-order-tema/${idTema}`,
+                cancel_url: `https://ezcode-43gl.onrender.com/api/pago/cancel-order`,
             },
         };
 

@@ -29,8 +29,7 @@ const userPost = async (req = request, res = response) => {
         });
 
     } catch (error) {
-        console.log(error);
-        MsgError(res);
+        res.status(400).json(error)
     }
 }
 

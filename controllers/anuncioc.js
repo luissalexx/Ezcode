@@ -236,39 +236,35 @@ const anuncioDelete = async (req = request, res = response) => {
     }
 };
 
-const frecuentesGet = async (req = request, res = response) => {
+const frecuentesGet = async (req, res) => {
     const { userId } = req.params;
 
     try {
         const cursosUsuario = await Curso.find({ alumno: userId });
 
-        const categoriasFrecuentes = {};
-        cursosUsuario.forEach((curso) => {
-            const categoria = curso.categoria;
-            categoriasFrecuentes[categoria] = (categoriasFrecuentes[categoria] || 0) + 1;
-        });
+        if (cursosUsuario.length >= 3) {
+            const categorias = cursosUsuario.map(curso => curso.categoria);
 
-        const categoriasArray = Object.keys(categoriasFrecuentes).map((categoria) => ({
-            categoria,
-            frecuencia: categoriasFrecuentes[categoria],
-        }));
+            const categoriasRepetidas = categorias.filter((categoria, index, array) => array.indexOf(categoria) !== index);
 
-        categoriasArray.sort((a, b) => b.frecuencia - a.frecuencia);
+            if (categoriasRepetidas.length > 0) {
+                const todosAnuncios = await Anuncio.find({}).populate('profesor', 'nombre apellido');;
+                const anunciosCategoriasFrecuentes = todosAnuncios.filter(anuncio => categoriasRepetidas.includes(anuncio.categoria));
+                const anunciosRestantes = todosAnuncios.filter(anuncio => !categoriasRepetidas.includes(anuncio.categoria));
 
-        const anunciosFrecuentes = [];
-        for (const categoriaObj of categoriasArray) {
-            const anuncios = await Anuncio.find({ categoria: categoriaObj.categoria })
-                .sort({ calificacion: 'desc' })
-                .limit(5);
+                const anunciosFiltrados = anunciosCategoriasFrecuentes.concat(anunciosRestantes).filter(anuncio => anuncio.estado === true);
 
-            anunciosFrecuentes.push(...anuncios);
+                res.json(anunciosFiltrados);
+            } else {
+                res.json([]);
+            }
+        } else {
+            res.json([]);
         }
-
-        res.json(anunciosFrecuentes);
     } catch (error) {
-        res.status(403).json({ error: 'Error al obtener anuncios frecuentes' });
+        res.status(500).json([]);
     }
-}
+};
 
 module.exports = {
     anuncioPost,
