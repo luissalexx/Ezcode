@@ -32,8 +32,8 @@ const createOrder = async (req = request, res = response) => {
                 brand_name: "Ezecode",
                 landing_page: "NO_PREFERENCE",
                 user_action: "PAY_NOW",
-                return_url: `http://localhost:8080/api/pago/capture-order/${solicitudId}/${idCliente}`,
-                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
+                return_url: `https://ezcode-43gl.onrender.com/api/pago/capture-order/${solicitudId}/${idCliente}`,
+                cancel_url: `https://ezcode-43gl.onrender.com/api/pago/cancel-order`,
             },
         };
 
@@ -169,8 +169,8 @@ const createOrderTema = async (req = request, res = response) => {
                 brand_name: "Ezecode",
                 landing_page: "NO_PREFERENCE",
                 user_action: "PAY_NOW",
-                return_url: `http://localhost:8080/api/pago/capture-order-tema/${idTema}`,
-                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
+                return_url: `https://ezcode-43gl.onrender.com/api/pago/capture-order-tema/${idTema}`,
+                cancel_url: `https://ezcode-43gl.onrender.com/api/pago/cancel-order`,
             },
         };
 
