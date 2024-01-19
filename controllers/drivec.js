@@ -102,7 +102,7 @@ const uploadFileToFolder = async (req, res) => {
             media: media,
             fields: 'id,webViewLink',
         });
- 
+
         const fileId = uploadedFile.data.id;
         const fileUrlEmbedded = `https://drive.google.com/file/d/${fileId}/preview`;
         const fileUrl = uploadedFile.data.webViewLink
@@ -121,6 +121,31 @@ const uploadFileToFolder = async (req, res) => {
     } catch (error) {
         console.error('Error:', error.message || error);
         res.status(500).json({ error: 'Internal Server Error' });
+    }
+};
+
+const getDriveFolderLink = async (folderId) => {
+    try {
+        const response = await drive.files.get({
+            fileId: folderId,
+            fields: 'webViewLink',
+        });
+
+        return response.data.webViewLink;
+    } catch (error) {
+        throw new Error(`Error al obtener el enlace de la carpeta: ${error.message}`);
+    }
+};
+
+const sendDriveFolderLink = async (req, res) => {
+    const { folderId } = req.params;
+
+    try {
+        const driveFolderLink = await getDriveFolderLink(folderId);
+        res.status(200).json({ link: driveFolderLink });
+    } catch (error) {
+        console.error('Error:', error);
+        res.status(500).json({ error: 'Error interno del servidor' });
     }
 };
 
@@ -164,5 +189,6 @@ const deleteFileFromFolder = async (req, res) => {
 module.exports = {
     createAndShareFolder,
     uploadFileToFolder,
+    sendDriveFolderLink,
     deleteFileFromFolder
 }

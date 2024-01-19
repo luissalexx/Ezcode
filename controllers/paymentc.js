@@ -32,8 +32,8 @@ const createOrder = async (req = request, res = response) => {
                 brand_name: "Ezecode",
                 landing_page: "NO_PREFERENCE",
                 user_action: "PAY_NOW",
-                return_url: `https://ezcode-43gl.onrender.com/api/pago/capture-order/${solicitudId}/${idCliente}`,
-                cancel_url: `https://ezcode-43gl.onrender.com/api/pago/cancel-order`,
+                return_url: `http://localhost:8080/api/pago/capture-order/${solicitudId}/${idCliente}`,
+                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
             },
         };
 
@@ -94,7 +94,6 @@ const captureOrder = async (req = request, res = response) => {
                     { pagado: true },
                     { new: true }
                 );
-
                 const profesor = await Profesor.findById(solicitud.profesor);
                 const anuncio = await Anuncio.findById(solicitud.anuncio);
                 profesor.notificaciones.push({
@@ -125,6 +124,18 @@ const captureOrder = async (req = request, res = response) => {
                     });
                     await alumno.save();
 
+                    let paymentStatus, paymentAmount;
+
+                    captureResponse.data.purchase_units.forEach((purchaseUnit, index) => {
+                        const paymentCapture = purchaseUnit.payments.captures[0];
+                        if (paymentCapture) {
+                            paymentStatus = paymentCapture.status;
+                            paymentAmount = paymentCapture.amount.value;
+                        }
+                    });
+
+                    generatePDF({ paymentStatus, paymentAmount, idSolicitud }, res);
+
                     await SolicitudCurso.findByIdAndDelete(idSolicitud);
                 }
             } catch (error) {
@@ -132,18 +143,6 @@ const captureOrder = async (req = request, res = response) => {
             }
         }
 
-        let fullName, paymentStatus, paymentAmount;
-
-        captureResponse.data.purchase_units.forEach((purchaseUnit, index) => {
-            fullName = purchaseUnit.shipping.name.full_name;
-            const paymentCapture = purchaseUnit.payments.captures[0];
-            if (paymentCapture) {
-                paymentStatus = paymentCapture.status;
-                paymentAmount = paymentCapture.amount.value;
-            }
-        });
-
-        generatePDF({ fullName, paymentStatus, paymentAmount }, res);
 
     } catch (error) {
         console.error(`Error capturing order: ${error.message}`);
@@ -170,8 +169,8 @@ const createOrderTema = async (req = request, res = response) => {
                 brand_name: "Ezecode",
                 landing_page: "NO_PREFERENCE",
                 user_action: "PAY_NOW",
-                return_url: `https://ezcode-43gl.onrender.com/api/pago/capture-order-tema/${idTema}`,
-                cancel_url: `https://ezcode-43gl.onrender.com/api/pago/cancel-order`,
+                return_url: `http://localhost:8080/api/pago/capture-order-tema/${idTema}`,
+                cancel_url: `http://localhost:8080/api/pago/cancel-order`,
             },
         };
 
@@ -236,23 +235,23 @@ const captureOrderTema = async (req = request, res = response) => {
                 if (!curso) {
                     return res.status(404).json({ mensaje: 'Tema no encontrado' });
                 }
+
+                let paymentStatus, paymentAmount;
+
+                captureResponse.data.purchase_units.forEach((purchaseUnit, index) => {
+                    const paymentCapture = purchaseUnit.payments.captures[0];
+                    if (paymentCapture) {
+                        paymentStatus = paymentCapture.status;
+                        paymentAmount = paymentCapture.amount.value;
+                    }
+                });
+
+                generatePDF({ paymentStatus, paymentAmount, curso }, res);
+
             } catch (error) {
                 console.error(`Error processing capture response: ${error.message}`);
             }
         }
-
-        let fullName, paymentStatus, paymentAmount;
-
-        captureResponse.data.purchase_units.forEach((purchaseUnit, index) => {
-            fullName = purchaseUnit.shipping.name.full_name;
-            const paymentCapture = purchaseUnit.payments.captures[0];
-            if (paymentCapture) {
-                paymentStatus = paymentCapture.status;
-                paymentAmount = paymentCapture.amount.value;
-            }
-        });
-
-        generatePDF({ fullName, paymentStatus, paymentAmount }, res);
 
     } catch (error) {
         console.error(`Error capturing order: ${error.message}`);
@@ -260,10 +259,31 @@ const captureOrderTema = async (req = request, res = response) => {
     }
 };
 
-const generatePDF = (data, res) => {
+const generatePDF = async (data, res) => {
+
     const doc = new PDFDocument();
     const ezecodePath = path.join(__dirname, '../assets/ezecode.png');
     res.attachment('recibo.pdf');
+
+    const solicitud = await SolicitudCurso.findById(data.idSolicitud);
+    let producto = data.curso;
+    let alumno = '';
+
+    if (!producto) {
+        producto = await Anuncio.findById(solicitud.anuncio);
+        alumno = await Cliente.findById(solicitud.alumno);
+    } else {
+        alumno = await Cliente.findById(producto.alumno);
+    }
+
+    const profesor = await Profesor.findById(producto.profesor);
+
+    const currentDate = new Date();
+    const formattedDate = currentDate.toLocaleDateString('es-ES', {
+        day: 'numeric',
+        month: 'numeric',
+        year: 'numeric',
+    });
 
     doc.pipe(res);
 
@@ -273,22 +293,35 @@ const generatePDF = (data, res) => {
 
     doc.text('Recibo de Pago', { align: 'center', fontSize: 16, margin: [0, 0, 0, 20] });
 
-    const headers = ['Nombre Completo', 'Estado del Pago', 'Importe'];
+    const headersLine1 = ['Nombre', 'Vendedor', 'Producto'];
+    const headersLine2 = ['Estado del Pago', 'Importe', 'Fecha de Pago'];
 
-    const tableData = [
-        [data.fullName, data.paymentStatus, data.paymentAmount],
-    ];
+    let yLine1 = doc.y + 30;
 
-    let y = doc.y + 30;
-
-    headers.forEach((header, i) => {
-        doc.text(header, 50 + i * 150, y, { width: 150, align: 'left' });
+    headersLine1.forEach((header, i) => {
+        doc.text(header, 50 + i * 150, yLine1, { width: 150, align: 'left' });
     });
 
-    tableData.forEach((row, rowIndex) => {
-        row.forEach((cell, colIndex) => {
-            doc.text(cell, 50 + colIndex * 150, y + (rowIndex + 1) * 20, { width: 150, align: 'left' });
-        });
+    const tableDataLine1 = [alumno.nombre, profesor.nombre, producto.nombre];
+
+    let yTableDataLine1 = doc.y + 10;
+
+    tableDataLine1.forEach((cell, colIndex) => {
+        doc.text(cell, 50 + colIndex * 150, yTableDataLine1, { width: 150, align: 'left' });
+    });
+
+    let yLine2 = yTableDataLine1 + 40;
+
+    headersLine2.forEach((header, i) => {
+        doc.text(header, 50 + i * 150, yLine2, { width: 150, align: 'left' });
+    });
+
+    const tableDataLine2 = [data.paymentStatus, data.paymentAmount, formattedDate];
+
+    let yTableDataLine2 = yLine2 + 20;
+
+    tableDataLine2.forEach((cell, colIndex) => {
+        doc.text(cell, 50 + colIndex * 150, yTableDataLine2, { width: 150, align: 'left' });
     });
 
     doc.end();
