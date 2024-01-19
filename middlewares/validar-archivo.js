@@ -3,7 +3,6 @@ const { response } = require("express");
 const extensionesPermitidas = ['jpg', 'jpeg', 'png', 'pdf', 'mp4', 'docx', 'pptx', 'xlsx'];
 
 const validarArchivoSubir = (req, res = response, next) => {
-    const files = req.files;
 
     if (!req.files || Object.keys(req.files).length === 0 || !req.files.archivo) {
         return res.status(400).json({

@@ -1,6 +1,5 @@
 const { response, request } = require('express');
 const { validationResult } = require('express-validator');
-const { MsgError } = require('../helpers/Myerror');
 const Cliente = require('../models/Cliente');
 
 const userPost = async (req = request, res = response) => {
@@ -43,7 +42,6 @@ const userGet = async (req = request, res = response) => {
         })
     } catch (error) {
         console.log(error);
-        MsgError(res);
     }
 }
 

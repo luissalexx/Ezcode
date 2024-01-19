@@ -1,5 +1,4 @@
 const { response, request } = require('express');
-const { MsgError } = require('../helpers/Myerror');
 const Profesor = require('../models/Profesor');
 
 const profePost = async (req = request, res = response) => {

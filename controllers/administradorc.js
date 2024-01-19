@@ -1,6 +1,5 @@
 const { response, request } = require('express');
 const Administrador = require('../models/Administrador')
-const { MsgError } = require('../helpers/Myerror');
 
 const adminGet = async (req = request, res = response) => {
     const { id } = req.params;
@@ -12,7 +11,6 @@ const adminGet = async (req = request, res = response) => {
         })
     } catch (error) {
         console.log(error);
-        MsgError(res);
     }
 }
 
