@@ -248,7 +248,7 @@ const frecuentesGet = async (req, res) => {
             const categoriasRepetidas = categorias.filter((categoria, index, array) => array.indexOf(categoria) !== index);
 
             if (categoriasRepetidas.length > 0) {
-                const todosAnuncios = await Anuncio.find({}).populate('profesor', 'nombre apellido');;
+                const todosAnuncios = await Anuncio.find({}).populate('profesor', 'nombre apellido');
                 const anunciosCategoriasFrecuentes = todosAnuncios.filter(anuncio => categoriasRepetidas.includes(anuncio.categoria));
                 const anunciosRestantes = todosAnuncios.filter(anuncio => !categoriasRepetidas.includes(anuncio.categoria));
 
